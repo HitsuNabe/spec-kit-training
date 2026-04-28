@@ -8,15 +8,25 @@
 
 ## Зміст курсу
 
+### Базовий блок (мінімум для одинокого вивчення)
+
 | Документ | Призначення |
 |----------|-------------|
 | `README.md` *(цей файл)* | Точка входу. 4 стадії + 6 сценаріїв + рекомендації |
 | `PROJECT_SETUP.md` | Стадія 1: розгортання тренувального проекту (FastAPI + React) |
-| `SPEC-KIT-docs.md` | Довідник: філософія SDD, команди, артефакти |
+| `SPEC-KIT-docs.md` | Довідник: філософія SDD, команди, артефакти, project memory, advanced features |
 | `SPEC_KIT_WORKFLOW_GUIDE.md` | End-to-end проходження однієї задачі (SDD-2) |
 | `SPEC_KIT_USE_CASES.md` | 9 сценаріїв від Beginner до Advanced |
 | `TASKS.md` | Бекенд із 7 практичних задач (стислий формат) |
 | `TASKS_JIRA.md` | Ті самі задачі у форматі Jira-сторі (детально) |
+
+### Поглиблений блок (для команд і реальних проектів)
+
+| Документ | Призначення |
+|----------|-------------|
+| `SCRUM_INTEGRATION.md` | Інтеграція spec-kit зі Scrum-церемоніями: грумінг, планінг, стендап, демо, ретро. Матриця ролей. Jira mapping. DoR/DoD |
+| `CONSTITUTION_GUIDE.md` | Глибокий гайд по `.specify/memory/constitution.md`: як писати, як еволюціонувати, реальний приклад v1.0 → v2.x за 12 місяців |
+| `SPECS_HYGIENE.md` | Підтримка `specs/` на масштабі (100+ фіч): lifecycle states, archival pattern, domain hierarchy, **5 паттернів currency maintenance** (A–E), **3 рівні автоматизації sync**, manifest, quarterly grooming, скрипти |
 
 ---
 
@@ -107,13 +117,13 @@ specify integration list
 
 Шість сценаріїв, від найпростішого до найскладнішого. Деталі — в `SPEC_KIT_USE_CASES.md`.
 
-### Сценарій 1 — Quick Spec Flow (`/speckit.specify` → `/speckit.implement`)
+### Сценарій 1 — Quick Spec Flow (для маленьких змін)
 
 | | |
 |---|---|
 | **Коли застосовувати** | Маленька ізольована фіча або баг-фікс |
 | **Час** | 30–60 хв |
-| **Команди** | `/speckit.specify` → `/speckit.plan` → `/speckit.implement` |
+| **Команди** | `/speckit.specify` → `/speckit.plan` → `/speckit.tasks` → `/speckit.implement` |
 
 **Приклад:**
 
@@ -122,7 +132,9 @@ specify integration list
 який повертає випадковий item з бази для авторизованого користувача.
 ```
 
-Пропускаємо `/clarify`, `/tasks`, `/analyze` — для маленької зміни ці кроки створюють зайвий шум.
+Пропускаємо `/clarify` і `/analyze` — для маленької зміни ці кроки створюють зайвий шум.
+
+> ⚠️ **Важливо**: `/speckit.tasks` пропускати **не можна** — `/speckit.implement` читає `tasks.md` як вхідні дані і блокує виконання без нього. Деталі — в `SPEC_KIT_USE_CASES.md`, Сценарій 1.
 
 ---
 
@@ -232,10 +244,10 @@ specify init my-new-project --integration claude
 ## Рекомендований шлях для одинака (40 годин)
 
 ```
-День 1 (8 год)  — Стадії 1–3 + читання SPEC-KIT-docs
+День 1 (8 год)  — Стадії 1–3 + читання SPEC-KIT-docs (включно з 8.5 і 8.6)
 День 2 (8 год)  — Сценарій 1 (Quick Flow) + SDD-1 (Tags)
 День 3 (8 год)  — Сценарій 2 (Brownfield) + SDD-2 (Search) — повний цикл
-День 4 (8 год)  — SDD-3 або SDD-5 + SDD-6
+День 4 (8 год)  — SDD-3 або SDD-5 + SDD-6 + читання CONSTITUTION_GUIDE
 День 5 (8 год)  — SDD-7 (Hard) + ретроспектива + написання внутрішнього constitution.md
 ```
 
@@ -246,7 +258,22 @@ specify init my-new-project --integration claude
 День 1 вечір    — Сценарій 2 наживо: ведучий проходить SDD-2 від /specify до /implement
                   (учасники повторюють у себе синхронно)
 День 2 ранок    — Парами: одна задача на пару (SDD-3, SDD-4, SDD-5)
-День 2 вечір    — Сценарій 5 (дискусія) + написання draft constitution.md команди
+День 2 вечір    — Читання SCRUM_INTEGRATION + CONSTITUTION_GUIDE +
+                  написання draft constitution.md команди
+```
+
+## Рекомендований шлях для tech lead, що впроваджує SDD у команду (2 тижні)
+
+```
+Тиждень 1
+  - День 1-2: Champion-pilot — самостійно проходите Сценарій 2 на 2 фічах
+  - День 3:   Читання SCRUM_INTEGRATION і CONSTITUTION_GUIDE
+  - День 4-5: Drafting workshop (constitution.md v1.0 з ratification)
+
+Тиждень 2
+  - День 1-3: Команда (3-4 інженери) робить пілот на 2-3 фічах із spec-kit
+  - День 4:   Ретроспектива пілоту → корекції constitution + processes
+  - День 5:   Прийняття рішення про повне впровадження або відмову
 ```
 
 ---
@@ -262,14 +289,42 @@ specify init my-new-project --integration claude
 
 ---
 
-## Що далі
+## Ключові інсайти, які вийшли з курсу
+
+Якщо ви вивчите усі сім (десять разом із поглибленим блоком) документів — наступне має увійти у вашу робочу свідомість:
+
+**1. Spec-kit — інженерний робочий простір, не заміна Jira.** Jira залишається планувальником і трекером. Зв'язок: Jira ID у назві папки + `Resolves PROJ-XXXX` у PR.
+
+**2. Constitution — виконавчий контракт, не лозунги.** Кожен принцип має проходити тест: «чи може агент порушити це у `/plan`, і чи Constitution Check це зловить?». Якщо ні — це не принцип. Деталі — в `CONSTITUTION_GUIDE.md`.
+
+**3. Project memory має 3 рівні**: інваріанти (constitution, init-options), живий контекст (CLAUDE.md/AGENTS.md), історія рішень (specs/). Деталі — в `SPEC-KIT-docs.md`, секція 8.5.
+
+**4. SP оцінюються на рівні Functional Requirements, не tasks.** FR → Jira stories; tasks.md → executable checklist у репо. Деталі — в `SCRUM_INTEGRATION.md`.
+
+**5. На масштабі без curation `specs/` стає смітником.** Lifecycle states + quarterly grooming + domain hierarchy. **5 паттернів** підтримки актуальності specs між спрінтами (Atomic+Frozen, Supersession Chain, Living Domain Specs, Unified Spec, Hybrid) + **3 рівні автоматизації sync** (template mod, hooks, custom command). Деталі — в `SPECS_HYGIENE.md`.
+
+**6. `/speckit.tasks` обов'язковий навіть у Quick Flow** — `/implement` без нього не працює. Скорочений флоу: пропускаєте `/clarify` і `/analyze`, але не `/tasks`.
+
+**7. Spec-kit використовує advanced agent features**: skills mode (Claude/Codex), sub-agent dispatch у research-фазі, parallel markers `[P]` в `/implement`. Деталі — в `SPEC-KIT-docs.md`, секція 8.6.
+
+**8. Інтеграція з командою — поетапна, не «з понеділка всі переходимо».** Champion pilot → showcase → constitution drafting → командний пілот → стандарт. План — в `SCRUM_INTEGRATION.md`.
+
+---
+
+## Що далі — для одинака
 
 Після завершення курсу:
 
-- Адаптуйте `constitution.md` під свою команду (RFC, code style, testing strategy).
+- Адаптуйте `constitution.md` під свою команду — використайте `CONSTITUTION_GUIDE.md` як шаблон процесу.
 - Створіть **внутрішній шаблон** spec-kit-проекту з вашою конституцією і прикладом spec.md — нові репозиторії стартують за 5 хвилин.
-- Інтегруйте `/speckit.taskstoissues` з Jira/Linear через MCP.
+- Інтегруйте `/speckit.taskstoissues` з Jira/Linear через MCP або власний скрипт.
 - Проведіть workshop за цим планом для решти команди.
+
+## Що далі — для tech lead команди
+
+- Champion pilot → showcase → drafting workshop → командний пілот (план в `SCRUM_INTEGRATION.md` секція «Як впровадити SDD у команду»).
+- Налаштуйте grooming/planning/retro ритуали згідно `SCRUM_INTEGRATION.md`.
+- Через 1 квартал — перший `SPECS_HYGIENE.md` ритуал (archival + index).
 
 ---
 
