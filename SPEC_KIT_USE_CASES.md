@@ -1,249 +1,250 @@
-# SPEC-KIT USE CASES — Сценарії за рівнями складності
+# SPEC-KIT USE CASES — Scenarios by Complexity Levels
 
-> Каталог із 9 сценаріїв застосування spec-kit. Від найпростіших (Beginner) до enterprise-патернів. Кожен сценарій — це шаблон для реальної ситуації, з якою ви зіткнетесь у роботі.
+> A catalog of 9 spec-kit application scenarios. From the simplest (Beginner) to enterprise patterns. Each scenario is a template for a real situation you will run into at work.
 
-Як читати:
+How to read this:
 
-- **Level**: складність *для застосування*, не складність задачі.
-- **When**: конкретні тригери — коли саме обирати цей сценарій.
-- **Time**: реалістичний часовий бюджет.
-- **Commands**: які slash-команди потрібні.
-- **Walkthrough**: коротке проходження.
-- **Pitfalls**: що зазвичай ламається.
+- **Level**: complexity *of applying* the scenario, not the complexity of the task itself.
+- **When**: concrete triggers — exactly when to pick this scenario.
+- **Time**: a realistic time budget.
+- **Commands**: which slash commands you will need.
+- **Walkthrough**: a short end-to-end walkthrough.
+- **Pitfalls**: what typically breaks.
 
 ---
 
-## Сценарій 1 — Quick Spec Flow
+## Scenario 1 — Quick Spec Flow
 
 **Level**: Beginner
-**When**: Маленька ізольована фіча, баг-фікс, або refactor одного модуля. Зміна локальна, скоуп ясний.
-**Time**: 30–60 хв
+**When**: A small isolated feature, a bug fix, or a refactor of a single module. The change is local and the scope is clear.
+**Time**: 30–60 min
 **Commands**: `/speckit.specify` → `/speckit.plan` → `/speckit.tasks` → `/speckit.implement`
 
 ### Walkthrough
 
 ```
-/speckit.specify Виправити баг: при видаленні item старший за 30 днів,
-soft-delete не записує deleted_at у БД. Має проставлятись timestamp UTC.
+/speckit.specify Fix bug: when deleting an item older than 30 days,
+soft-delete does not write deleted_at to the DB. A UTC timestamp
+should be set.
 
-/speckit.plan Backend-only зміна. Оновити ItemService.delete_item.
-Без міграцій, поле deleted_at вже є.
+/speckit.plan Backend-only change. Update ItemService.delete_item.
+No migrations, the deleted_at field already exists.
 
 /speckit.tasks
 
 /speckit.implement
 ```
 
-Пропускаємо `/clarify` і `/speckit.analyze` — для маленької зміни ці кроки створюють зайвий шум.
+We skip `/clarify` and `/speckit.analyze` — for a small change these steps just add noise.
 
-> ⚠️ **Важливо**: `/speckit.tasks` пропускати **не можна**, навіть для маленьких змін. `/speckit.implement` читає `tasks.md` як вхідні дані — без нього блокує виконання з повідомленням «This command assumes a complete task breakdown exists in tasks.md». Хвилину на `/tasks` коштує дешевше, ніж блокер посередині імплементації.
+> ⚠️ **Important**: `/speckit.tasks` **cannot** be skipped, even for small changes. `/speckit.implement` reads `tasks.md` as input — without it, execution is blocked with the message "This command assumes a complete task breakdown exists in tasks.md". A minute spent on `/tasks` is cheaper than getting blocked in the middle of implementation.
 
-### Коли НЕ застосовувати
+### When NOT to apply this
 
-- Зміна торкається 3+ файлів і кількох модулів — використайте Сценарій 2.
-- Невідомий стек/архітектура — використайте Сценарій 7 (Brownfield Discovery).
-- Зовсім тривіальна зміна (один рядок в одному файлі) — пишіть код руками без spec-kit взагалі.
+- The change touches 3+ files and several modules — use Scenario 2.
+- Unknown stack/architecture — use Scenario 7 (Brownfield Discovery).
+- A truly trivial change (one line in one file) — write the code by hand without spec-kit at all.
 
 ### Pitfalls
 
-- Спокуса не описувати в спеці edge case → відсутній тест → баг повертається.
-- «Маленька фіча» виявилась великою на середині `/implement` — STOP, зробіть `/clarify` і `/analyze` ретроактивно.
-- Працюємо на `master` без feature-branch → `/implement` зупиниться через `before_specify` hook не зрізав branch. Лікування — `git checkout -b 001-feature-name` і повторно `/implement`.
+- The temptation to skip describing edge cases in the spec → no test → the bug comes back.
+- A "small feature" turned out to be large mid-`/implement` — STOP, run `/clarify` and `/analyze` retroactively.
+- Working on `master` without a feature branch → `/implement` halts because the `before_specify` hook did not cut a branch. The fix is `git checkout -b 001-feature-name` and re-running `/implement`.
 
 ---
 
-## Сценарій 2 — Brownfield Feature (повний цикл)
+## Scenario 2 — Brownfield Feature (Full Cycle)
 
 **Level**: Basic
-**When**: Нова фіча в існуючому проекті. Це **типовий** робочий випадок у компанії.
-**Time**: 2–4 години (не враховуючи підготовку constitution.md)
+**When**: A new feature in an existing project. This is the **typical** working case in a company.
+**Time**: 2–4 hours (not counting constitution.md preparation)
 **Commands**: `/speckit.specify` → `/speckit.clarify` → `/speckit.plan` → `/speckit.tasks` → `/speckit.analyze` → `/speckit.implement`
 
 ### Walkthrough
 
-Дивіться **`SPEC_KIT_WORKFLOW_GUIDE.md`** — там повне проходження SDD-2 (Search & Filter) з прикладами всіх артефактів.
+See **`SPEC_KIT_WORKFLOW_GUIDE.md`** — it contains the full SDD-2 (Search & Filter) walkthrough with examples of every artifact.
 
-### Особливості
+### Specifics
 
-- Constitution вже існує — `/speckit.constitution` НЕ запускаємо.
-- В `/specify` коротко описуємо інтеграцію з існуючими сутностями (`Item`, `User`).
-- В `/plan` обовʼязково згадуємо існуючий стек — інакше агент може запропонувати щось чуже (Express замість FastAPI).
+- The constitution already exists — do NOT run `/speckit.constitution`.
+- In `/specify`, briefly describe integration with existing entities (`Item`, `User`).
+- In `/plan`, you must mention the existing stack — otherwise the agent may suggest something foreign (Express instead of FastAPI).
 
 ### Pitfalls
 
-- Забути запустити `/clarify` → отримати plan з помилковими припущеннями.
-- Скопіпастити `/specify` промпт зі старого тікета у Jira, де згадано стек → стек просочується в спеку.
-- Не запустити `/analyze` → пропустити CRITICAL Coverage gap.
+- Forgetting to run `/clarify` → ending up with a plan built on flawed assumptions.
+- Copy-pasting a `/specify` prompt from an old Jira ticket that mentions the stack → the stack leaks into the spec.
+- Skipping `/analyze` → missing a CRITICAL Coverage gap.
 
 ---
 
-## Сценарій 3 — Constitution Setup (нова команда)
+## Scenario 3 — Constitution Setup (New Team)
 
 **Level**: Basic
-**When**: Старт нового проекту АБО введення SDD у команду, яка ще не використовувала spec-kit.
-**Time**: 1 робочий день (з обговореннями в команді)
-**Commands**: `/speckit.constitution` → дискусія → доопрацювання
+**When**: Starting a new project OR introducing SDD into a team that has not used spec-kit yet.
+**Time**: 1 working day (with team discussions)
+**Commands**: `/speckit.constitution` → discussion → revision
 
 ### Walkthrough
 
 ```
-/speckit.constitution Створи принципи для команди з 6 інженерів,
-що працює над B2B SaaS на Python (FastAPI) + React.
+/speckit.constitution Create principles for a team of 6 engineers
+working on a B2B SaaS in Python (FastAPI) + React.
 
-Test-First (NON-NEGOTIABLE): pytest, 75% coverage на нові модулі,
-mutation testing раз на спринт.
+Test-First (NON-NEGOTIABLE): pytest, 75% coverage on new modules,
+mutation testing once per sprint.
 
 Type Safety (MUST): Python 3.11+ pydantic, TypeScript strict.
 
 API contracts (MUST): OpenAPI generator before code, breaking changes
-тільки з версіонуванням API.
+only with API versioning.
 
-Observability (MUST): structlog, OTEL traces, кожен endpoint логується
-з trace_id.
+Observability (MUST): structlog, OTEL traces, every endpoint logs
+with trace_id.
 
-Performance (SHOULD): backend p95 < 200ms на ендпоінти списків,
-< 500ms на агрегації.
+Performance (SHOULD): backend p95 < 200ms on list endpoints,
+< 500ms on aggregations.
 
-Simplicity (SHOULD): no new deps without RFC. Замість абстракцій —
+Simplicity (SHOULD): no new deps without RFC. Instead of abstractions —
 explicit code.
 
-Governance: принципи MUST змінюються через RFC на github discussions
-+ 2 review від staff+. Constitution version: semver.
+Governance: principles MUST be changed via an RFC on github discussions
++ 2 reviews from staff+. Constitution version: semver.
 ```
 
-Результат: `.specify/memory/constitution.md` v1.0.0.
+Result: `.specify/memory/constitution.md` v1.0.0.
 
-### Доопрацювання в команді
+### Team revision
 
-1. Прочитати разом на зустрічі.
-2. Кожен інженер пропонує свою правку → обговорення.
-3. Після консенсусу — повторно запускаєте `/speckit.constitution` з оновленими формулюваннями.
-4. Bump версії: PATCH для wording, MINOR для нового принципу, MAJOR для зміни/видалення.
-5. Кожна зміна — окремий PR з обґрунтуванням.
+1. Read it together in a meeting.
+2. Each engineer proposes their edit → discussion.
+3. Once there is consensus — re-run `/speckit.constitution` with the updated wording.
+4. Version bump: PATCH for wording, MINOR for a new principle, MAJOR for changes/removal.
+5. Each change is a separate PR with rationale.
 
 ### Pitfalls
 
-- **Маркетингові принципи**: «We value craftsmanship» — не testable, спалюємо.
-- **Принципи без rationale**: «100% coverage» без пояснення *чому* → команда саботує.
-- **Перебір MUST**: усе MUST → нічого не MUST. Залиште 4–6 справжніх MUST + рештa SHOULD.
-- **Constitution як waterfall** — пишемо раз і не оновлюємо. Версіонуйте і ревʼюйте раз на квартал.
+- **Marketing-style principles**: "We value craftsmanship" — not testable, drop them.
+- **Principles without rationale**: "100% coverage" without explaining *why* → the team will sabotage it.
+- **Too many MUSTs**: if everything is MUST, nothing is MUST. Keep 4–6 real MUSTs + the rest as SHOULD.
+- **Constitution as waterfall** — written once and never updated. Version it and review once a quarter.
 
 ---
 
-## Сценарій 4 — Re-spec / Reset (зрозуміли, що йдемо не туди)
+## Scenario 4 — Re-spec / Reset (Realizing You Are Going the Wrong Way)
 
 **Level**: Basic
-**When**: Після `/plan` або під час `/implement` зрозуміли, що бракує вимог, або змінився скоуп.
-**Time**: 30–90 хв
-**Commands**: `/speckit.clarify` повторно → ручна правка `spec.md` → `/speckit.plan` (re-run) → `/speckit.tasks` (re-run) → `/speckit.analyze`
+**When**: After `/plan` or during `/implement` you realize requirements are missing, or the scope changed.
+**Time**: 30–90 min
+**Commands**: `/speckit.clarify` again → manual edit of `spec.md` → `/speckit.plan` (re-run) → `/speckit.tasks` (re-run) → `/speckit.analyze`
 
 ### Walkthrough
 
-Уявіть, ви на половині `/implement` SDD-2 (Search). Раптом продакт каже: «Ще треба пошук по description, а не тільки по title».
+Imagine you are halfway through `/implement` of SDD-2 (Search). Suddenly the product owner says: "We also need search over description, not only title."
 
 ```bash
-# 1. Зупиняємо implement
-# 2. Відкатуємо некомічений код:
+# 1. Stop implement
+# 2. Roll back uncommitted code:
 git stash
 
 # 3. Re-spec:
 ```
 
 ```
-/speckit.specify (edit) Розширити скоуп: пошук тепер по двох полях —
-title AND description (substring match, OR-логіка). Counter "Found N items"
-все ще показує загальну кількість матчів.
+/speckit.specify (edit) Expand scope: search now covers two fields —
+title AND description (substring match, OR-logic). The "Found N items"
+counter still shows the total number of matches.
 
-Решта — без змін.
+The rest is unchanged.
 ```
 
-Агент модифікує існуючий `spec.md`. Запускаємо:
+The agent modifies the existing `spec.md`. Then run:
 
 ```
-/speckit.clarify     # перевірка нових двозначностей
-/speckit.plan        # перегенерація плану
-/speckit.tasks       # нові задачі
-/speckit.analyze     # аудит
+/speckit.clarify     # check for new ambiguities
+/speckit.plan        # regenerate the plan
+/speckit.tasks       # new tasks
+/speckit.analyze     # audit
 ```
 
-`tasks.md` автоматично адаптується. Після цього:
+`tasks.md` adapts automatically. After that:
 
 ```
 /speckit.implement
 ```
 
-Агент бачить, що деякі `[X]` уже зроблені (попередні задачі) — виконує тільки нові/змінені.
+The agent sees that some `[X]` are already done (from previous tasks) — it only executes the new/changed ones.
 
 ### Pitfalls
 
-- **Не тримати `git stash`**: код накладається на новий tasks.md → конфлікти.
-- **Забути bump constitution**: якщо changescope порушує принцип Simplicity, треба або обґрунтувати в Complexity Tracking, або переглянути конституцію.
-- **Не оновити PR description**: ревʼюєр здивується, чому код не відповідає старій спеці.
+- **Not keeping the `git stash`**: code lands on top of the new tasks.md → conflicts.
+- **Forgetting to bump the constitution**: if the scope change violates the Simplicity principle, you must either justify it in Complexity Tracking or revise the constitution.
+- **Not updating the PR description**: the reviewer will be surprised that the code does not match the old spec.
 
-> 💡 **Ключове правило**: краще передумати на фазі specs (1 година), ніж після `/implement` (тиждень рефакторингу).
+> 💡 **Key principle**: it is better to change your mind during the specs phase (1 hour) than after `/implement` (a week of refactoring).
 
 ---
 
-## Сценарій 5 — Team Collaboration
+## Scenario 5 — Team Collaboration
 
 **Level**: Intermediate
-**When**: Впровадження spec-kit у команду 5–10 людей.
-**Time**: 1–2 спринти на адаптацію
-**Commands**: усі + GitHub MCP `/speckit.taskstoissues`
+**When**: Rolling out spec-kit across a team of 5–10 people.
+**Time**: 1–2 sprints to adapt
+**Commands**: all of them + GitHub MCP `/speckit.taskstoissues`
 
 ### Walkthrough
 
-#### Хто пише constitution.md
+#### Who writes constitution.md
 
-Tech lead + staff engineer. Мінімум 2 людини, максимум 4 — щоб не загрузнути в bikeshedding.
+Tech lead + staff engineer. Minimum 2 people, maximum 4 — to avoid getting stuck in bikeshedding.
 
-#### Як ревʼюити specs
+#### How to review specs
 
-1. PR на `specs/<feature>/spec.md` створюється **до** `/plan`.
-2. Ревʼєвери (PM + 1 інженер) дивляться **тільки spec.md** — стек ще не вибраний.
-3. Після approve — той самий PR доповнюється `plan.md`, `tasks.md`.
-4. Окремий ревʼю на `plan.md` (фокус на Constitution Check, Complexity Tracking).
-5. Final PR з кодом — посилається на specs/<feature>/.
+1. A PR for `specs/<feature>/spec.md` is opened **before** `/plan`.
+2. Reviewers (PM + 1 engineer) look at **only spec.md** — the stack is not picked yet.
+3. After approval — the same PR gets `plan.md` and `tasks.md` added.
+4. A separate review on `plan.md` (focus on Constitution Check, Complexity Tracking).
+5. The final code PR — references specs/<feature>/.
 
-#### Як ділити роботу
+#### How to divide the work
 
-| Артефакт | Хто | Коли |
+| Artifact | Who | When |
 |----------|-----|------|
-| `spec.md` | PM + інженер парою | Перший день спринту |
-| `plan.md` | Tech lead інженер | Другий день |
-| `tasks.md` | Згенеровано → ревʼю | Третій день |
-| Імплементація | Будь-який інженер | Решта спринту |
+| `spec.md` | PM + engineer pair | First day of the sprint |
+| `plan.md` | Tech lead engineer | Second day |
+| `tasks.md` | Generated → review | Third day |
+| Implementation | Any engineer | Rest of the sprint |
 
-Один `specs/<feature>/` = один PR = один тікет у Jira/Linear.
+One `specs/<feature>/` = one PR = one ticket in Jira/Linear.
 
-#### Інтеграція з Jira/Linear
+#### Integration with Jira/Linear
 
 ```
 /speckit.taskstoissues
 ```
 
-Створює GitHub issues. Через GitHub→Jira інтеграцію (наприклад, Atlassian Marketplace app `Issues for Jira`) issues автоматично копіюються в Jira.
+Creates GitHub issues. Through a GitHub→Jira integration (for example the Atlassian Marketplace app `Issues for Jira`), the issues are automatically copied to Jira.
 
-#### Конфлікт між constitution і реальністю
+#### Conflict between constitution and reality
 
-- Інженер хоче додати lib, що порушує Simplicity.
-- Створює RFC у `docs/rfc/<num>-<title>.md`.
-- 2 staff approve → конституція оновлюється (`/speckit.constitution`) → MINOR bump.
+- An engineer wants to add a library that violates Simplicity.
+- They open an RFC at `docs/rfc/<num>-<title>.md`.
+- 2 staff approvals → the constitution is updated (`/speckit.constitution`) → MINOR bump.
 
 ### Pitfalls
 
-- **«Constitution by Tech Lead»** без команди → всі ігнорують.
-- **Ревʼю `spec.md` форматально** → виявляють проблему на code review → переробка.
-- **PM пише `spec.md` сам** → інженерські вимоги (rate limit, observability) випадають.
-- **Не оновлюють constitution** → стає «mythologized document» → нові інженери не вірять.
+- **"Constitution by Tech Lead"** without team buy-in → everyone ignores it.
+- **Reviewing `spec.md` as a formality** → the problem surfaces at code review → rework.
+- **PM writes `spec.md` alone** → engineering requirements (rate limit, observability) drop out.
+- **Constitution never updated** → it becomes a "mythologized document" → new engineers do not trust it.
 
 ---
 
-## Сценарій 6 — Greenfield Project
+## Scenario 6 — Greenfield Project
 
 **Level**: Intermediate
-**When**: Створюється новий проект з нуля.
-**Time**: 1–2 дні до першого PR
+**When**: A brand new project being created from scratch.
+**Time**: 1–2 days to the first PR
 **Commands**: `specify init <new-project>` → `/speckit.constitution` → `/speckit.specify` (vision) → `/speckit.specify` (per epic) → ... → `/speckit.implement`
 
 ### Walkthrough
@@ -255,102 +256,102 @@ git init
 ```
 
 ```
-/speckit.constitution Створи принципи для нового pet-проекту:
-Library-First, CLI Interface Mandate (кожен модуль має CLI),
+/speckit.constitution Create principles for a new pet project:
+Library-First, CLI Interface Mandate (every module has a CLI),
 Test-First, Observability, Simplicity (KISS).
 ```
 
 ```
-/speckit.specify Taskify — це SaaS для управління задачами в малих
-командах (5–15 осіб). Вища ціль: дати lightweight Trello-альтернативу
-з фокусом на kanban і простотою.
+/speckit.specify Taskify is a SaaS for task management in small
+teams (5–15 people). Higher goal: provide a lightweight Trello
+alternative focused on kanban and simplicity.
 
-Основні epics:
+Main epics:
 1. Auth & Workspaces (multi-tenant)
 2. Boards & Lists & Cards (drag-and-drop)
 3. Comments & @mentions
 4. Notifications (in-app + email)
 5. API for integrations
 
-Цей spec — high-level vision. Деталі будуть у per-epic spec-ах.
+This spec is the high-level vision. Details will live in per-epic specs.
 ```
 
-Створено `specs/001-vision/spec.md`.
+Created `specs/001-vision/spec.md`.
 
 ```
-/speckit.specify Реалізуй Epic 1: Auth & Workspaces.
-Multi-tenant з ізоляцією даних на рівні workspace_id.
-Email + password auth через FastAPI-Users.
-Workspace ↔ User M2M через WorkspaceMember (з ролью: owner/admin/member).
+/speckit.specify Implement Epic 1: Auth & Workspaces.
+Multi-tenant with data isolation at the workspace_id level.
+Email + password auth via FastAPI-Users.
+Workspace ↔ User M2M via WorkspaceMember (with role: owner/admin/member).
 ```
 
-Створено `specs/002-auth-workspaces/spec.md`.
+Created `specs/002-auth-workspaces/spec.md`.
 
-Далі — повний цикл: `/clarify` → `/plan` → `/tasks` → `/analyze` → `/implement`.
+Then — the full cycle: `/clarify` → `/plan` → `/tasks` → `/analyze` → `/implement`.
 
-#### Послідовність епіків
+#### Epic sequence
 
 ```
-001-vision (тільки spec, без plan/implement) ← живе як reference
-002-auth-workspaces ← повний цикл
-003-boards ← повний цикл (depends on 002)
+001-vision (spec only, no plan/implement) ← lives as a reference
+002-auth-workspaces ← full cycle
+003-boards ← full cycle (depends on 002)
 004-comments-mentions ← (depends on 003)
 005-notifications ← (parallel with 004)
-006-public-api ← після всього
+006-public-api ← after everything
 ```
 
 ### Pitfalls
 
-- **Описати все в одній спеці** → 50-сторінковий монстр, який ніхто не прочитає.
-- **Vision без Definition of Done** → проект ніколи не «закінчується».
-- **Стрибати в `/plan` без vision** → через 3 епіки виявляється архітектурна несумісність.
+- **Describing everything in one spec** → a 50-page monster nobody reads.
+- **Vision without a Definition of Done** → the project never "finishes".
+- **Jumping into `/plan` without a vision** → after 3 epics an architectural mismatch surfaces.
 
 ---
 
-## Сценарій 7 — Brownfield Discovery (адаптація spec-kit до незнайомої кодбази)
+## Scenario 7 — Brownfield Discovery (Adapting spec-kit to an Unfamiliar Codebase)
 
 **Level**: Intermediate
-**When**: Заходите в репозиторій, який ви бачите вперше — і потрібно додати фічу.
-**Time**: 2–6 годин (включаючи discovery)
-**Commands**: discovery (вручну + AI) → `/speckit.specify` → решта стандартного циклу
+**When**: You enter a repository you are seeing for the first time and need to add a feature.
+**Time**: 2–6 hours (including discovery)
+**Commands**: discovery (manual + AI) → `/speckit.specify` → the rest of the standard cycle
 
 ### Walkthrough
 
-#### Phase 0 — Discovery (без spec-kit)
+#### Phase 0 — Discovery (no spec-kit)
 
 ```
-[chat with AI agent, без slash-команди]
+[chat with AI agent, no slash command]
 
-Перед тим як створювати спеку — допоможи розібратися з кодбазою.
+Before we create a spec — help me understand the codebase.
 
-1. Покажи структуру: backend/, frontend/, infra/.
-2. Які основні моделі в backend/app/models/?
-3. Які API-роути зараз існують? Покажи routerи з /api/v1/.
-4. Як організована авторизація?
-5. Чи є існуючі тести? Як вони запускаються?
+1. Show the structure: backend/, frontend/, infra/.
+2. What are the main models in backend/app/models/?
+3. What API routes exist today? Show the routers under /api/v1/.
+4. How is authorization organized?
+5. Are there existing tests? How do they run?
 
-Узагальни в 200 словах.
+Summarize in 200 words.
 ```
 
 #### Phase 1 — Architecture brief
 
 ```
-Запиши узагальнення в docs/architecture-brief.md.
-Включи:
-- ER-діаграма ASCII
-- Список endpoints
+Save the summary to docs/architecture-brief.md.
+Include:
+- ASCII ER diagram
+- List of endpoints
 - Auth flow
-- Тестова стратегія
-- Точки розширення для нових фіч
+- Test strategy
+- Extension points for new features
 ```
 
-Тепер у вас є контекст для нормального `/specify`.
+Now you have the context for a proper `/specify`.
 
 #### Phase 2 — Standard cycle
 
 ```
-/speckit.constitution    # якщо ще немає
-/speckit.specify ...     # тепер з knowledge of existing code
+/speckit.constitution    # if it does not exist yet
+/speckit.specify ...     # now with knowledge of existing code
 /speckit.clarify
 /speckit.plan
 /speckit.tasks
@@ -358,23 +359,23 @@ Workspace ↔ User M2M через WorkspaceMember (з ролью: owner/admin/me
 /speckit.implement
 ```
 
-#### Альтернатива
+#### Alternative
 
-Існує спільнотний extension **`spec-kit-brownfield`**, який автоматизує discovery. Інсталюється через `extensions.yml`. Не рекомендується для production без вивчення коду самостійно — automated discovery може пропустити нюанси.
+A community extension **`spec-kit-brownfield`** exists that automates discovery. Installed via `extensions.yml`. Not recommended for production without studying the code yourself — automated discovery can miss nuances.
 
 ### Pitfalls
 
-- **Стрибнути одразу в `/specify`** → агент імпровізує, бо не знає вашу архітектуру.
-- **Discovery без артефакту** → втрачено в історії чату, наступний інженер повторює.
-- **Спека ігнорує існуючі патерни** → код стилістично контрастує з рештою.
+- **Jumping straight into `/specify`** → the agent improvises because it does not know your architecture.
+- **Discovery without an artifact** → it is lost in chat history, the next engineer repeats it.
+- **The spec ignores existing patterns** → the code stylistically clashes with the rest.
 
 ---
 
-## Сценарій 8 — Refactor під SDD (legacy → spec-kit)
+## Scenario 8 — Refactor Under SDD (legacy → spec-kit)
 
 **Level**: Advanced
-**When**: Існуючий складний модуль, який треба переписати, але документація відсутня.
-**Time**: 1–2 тижні
+**When**: An existing complex module that needs to be rewritten, but documentation is missing.
+**Time**: 1–2 weeks
 **Commands**: discovery → `/speckit.specify` (reverse-engineering) → `/speckit.plan` → `/speckit.implement`
 
 ### Walkthrough
@@ -382,65 +383,65 @@ Workspace ↔ User M2M через WorkspaceMember (з ролью: owner/admin/me
 #### Reverse-engineering existing behavior
 
 ```
-/speckit.specify Створи специфікацію для існуючого модуля
+/speckit.specify Create a specification for the existing module
 backend/app/services/notification_service.py.
 
-Прочитай файл і всі його тести (якщо є). Опиши actual behavior:
-- Які типи нотифікацій підтримуються?
-- Які тригери?
-- Які канали (email, in-app, push)?
-- Які retry-механізми?
-- Які edge cases (помилки, дублі, rate limits)?
+Read the file and all of its tests (if any). Describe actual behavior:
+- Which notification types are supported?
+- What are the triggers?
+- Which channels (email, in-app, push)?
+- What retry mechanisms exist?
+- What edge cases (errors, duplicates, rate limits)?
 
-Це reverse-engineered specification. Помітити її як `## Reverse-Engineered`
-у заголовку. Зазначити в Out of Scope: "feature parity з existing code".
+This is a reverse-engineered specification. Mark it as `## Reverse-Engineered`
+in the title. Note in Out of Scope: "feature parity with existing code".
 ```
 
-Створено `specs/010-notifications-refactor/spec.md` із описом as-is поведінки.
+Created `specs/010-notifications-refactor/spec.md` describing the as-is behavior.
 
-#### Аналіз дельти
+#### Delta analysis
 
 ```
-/speckit.specify (edit) Тепер додай to-be вимоги:
-1. Підтримку push-нотифікацій (зараз тільки email).
+/speckit.specify (edit) Now add the to-be requirements:
+1. Push notification support (currently email only).
 2. Rate limiting per user (10/min).
-3. Centralized retry queue (зараз inline).
-4. Observability metrics для delivery rate.
+3. Centralized retry queue (currently inline).
+4. Observability metrics for delivery rate.
 
-Збережи розділ "Existing Behavior" як reference.
+Keep the "Existing Behavior" section as a reference.
 ```
 
-#### План переходу
+#### Transition plan
 
 ```
-/speckit.plan Стратегія міграції: Strangler Fig pattern.
-Phase 1: створити нові модулі поряд (notification_v2_service.py).
-Phase 2: feature flag для перемикання.
-Phase 3: deprecate v1, видалити після місяця.
+/speckit.plan Migration strategy: Strangler Fig pattern.
+Phase 1: build new modules side by side (notification_v2_service.py).
+Phase 2: feature flag to switch.
+Phase 3: deprecate v1, remove after one month.
 
 Rollback: feature flag.
 ```
 
-`/tasks` згенерує задачі, що включають подвійну реалізацію + інтеграційні тести на feature parity.
+`/tasks` will generate tasks that include parallel implementation + integration tests for feature parity.
 
 ### Pitfalls
 
-- **Refactor без spec.md** → за місяць нікому не зрозуміло, *що* саме переписали.
-- **Big-bang refactor** → 5K LoC PR, ніхто не ревʼюїть.
-- **Без rollback-плану** → у production щось ламається, panic.
+- **Refactor without a spec.md** → in a month nobody understands *what* exactly was rewritten.
+- **Big-bang refactor** → a 5K LoC PR that nobody reviews.
+- **No rollback plan** → something breaks in production, panic.
 
 ---
 
-## Сценарій 9 — Compliance / Regulated Domain
+## Scenario 9 — Compliance / Regulated Domain
 
 **Level**: Advanced
-**When**: Healthcare, finance, government — є compliance-вимоги (HIPAA, SOC2, GDPR).
-**Time**: +30–50% до базового workflow
-**Commands**: усі + `/speckit.checklist` для compliance
+**When**: Healthcare, finance, government — there are compliance requirements (HIPAA, SOC2, GDPR).
+**Time**: +30–50% on top of the base workflow
+**Commands**: all of them + `/speckit.checklist` for compliance
 
 ### Walkthrough
 
-#### Constitution з compliance-блоком
+#### Constitution with a compliance block
 
 ```
 /speckit.constitution ... + Compliance Principles:
@@ -458,10 +459,10 @@ Rollback: feature flag.
     30 days; compliance reports show completion.
 
 Governance: any violation of NON-NEGOTIABLE = release blocker.
-Compliance officer reviewer на всіх PR з тегом `compliance`.
+Compliance officer reviewer on all PRs tagged `compliance`.
 ```
 
-#### Compliance checklist на кожну фічу
+#### Compliance checklist for every feature
 
 ```
 /speckit.checklist Generate HIPAA compliance checklist for spec.md.
@@ -473,69 +474,69 @@ Focus on:
 - Data retention rules
 ```
 
-Згенеровано `specs/<feature>/checklists/hipaa.md`. **`/speckit.implement` зупиниться**, якщо цей checklist не повністю ✅.
+This generates `specs/<feature>/checklists/hipaa.md`. **`/speckit.implement` will halt** if this checklist is not fully checked off.
 
-#### Preset для compliance
+#### A compliance preset
 
 ```bash
 specify init my-project --preset healthcare-compliance --integration claude
 ```
 
-(Якщо preset існує — перевірте `specify integration list` і community presets.)
+(If the preset exists — check `specify integration list` and community presets.)
 
-#### Поглиблений audit перед relase
+#### Deeper audit before release
 
 ```
 /speckit.analyze
 ```
 
-Виводить додаткові категорії: `Compliance Coverage`, `PHI Tracking`, `Audit Trail Gaps`. Будь-який CRITICAL — release blocker.
+It outputs additional categories: `Compliance Coverage`, `PHI Tracking`, `Audit Trail Gaps`. Any CRITICAL is a release blocker.
 
 ### Pitfalls
 
-- **Compliance як «галочка» в Jira** → реально не виконано → fail при аудиті.
-- **Constitution без compliance principles** → агент не блокує небезпечні фічі.
-- **Custom checklist без revision history** → compliance officer не довіряє.
-- **Імплементація без `/analyze`** → CRITICAL знахідки прилітають у production.
+- **Compliance as a "checkbox" in Jira** → not actually done → fail the audit.
+- **Constitution without compliance principles** → the agent does not block dangerous features.
+- **Custom checklist with no revision history** → the compliance officer does not trust it.
+- **Implementation without `/analyze`** → CRITICAL findings land in production.
 
 ---
 
-## Підсумкова таблиця
+## Summary table
 
-| Сценарій | Level | Час | Ключові команди |
-|----------|-------|-----|----------------|
-| 1. Quick Spec Flow | Beginner | 30–60 хв | specify → plan → implement |
-| 2. Brownfield Feature | Basic | 2–4 год | повний цикл |
-| 3. Constitution Setup | Basic | 1 день | constitution + дискусія |
-| 4. Re-spec / Reset | Basic | 30–90 хв | clarify → spec edit → plan/tasks re-run |
-| 5. Team Collaboration | Intermediate | 1–2 спринти | усі + taskstoissues |
-| 6. Greenfield | Intermediate | 1–2 дні | init → vision → per-epic |
-| 7. Brownfield Discovery | Intermediate | 2–6 год | discovery → стандартний цикл |
-| 8. Refactor під SDD | Advanced | 1–2 тижні | reverse-engineer → strangler fig |
-| 9. Compliance | Advanced | +30–50% | + checklist + analyze з compliance-mode |
-
----
-
-## Рекомендації — з чого почати?
-
-### Якщо ви новачок у spec-kit
-→ **Сценарій 1** (Quick Spec Flow) на одному маленькому багу. Потім **Сценарій 2** на середній фічі.
-
-### Якщо вводите spec-kit у команду
-→ **Сценарій 3** (Constitution) як перший крок. Потім **Сценарій 5** (Team Collaboration) як шаблон процесу.
-
-### Якщо у вас legacy-проект
-→ **Сценарій 7** (Brownfield Discovery) перед першим `/specify`. Не пропускайте discovery.
-
-### Якщо стартуєте новий проект
-→ **Сценарій 6** (Greenfield) із vision-spec → per-epic spec-и.
-
-### Якщо у вас compliance-вимоги
-→ **Сценарій 9** ще на стадії конституції — інакше переробляти втричі важче.
-
-### Якщо щось пішло не так
-→ **Сценарій 4** (Re-spec / Reset). Не намагайтесь героїчно довести `/implement` до кінця, якщо спека хибна.
+| Scenario | Level | Time | Key commands |
+|----------|-------|------|--------------|
+| 1. Quick Spec Flow | Beginner | 30–60 min | specify → plan → implement |
+| 2. Brownfield Feature | Basic | 2–4 hr | full cycle |
+| 3. Constitution Setup | Basic | 1 day | constitution + discussion |
+| 4. Re-spec / Reset | Basic | 30–90 min | clarify → spec edit → plan/tasks re-run |
+| 5. Team Collaboration | Intermediate | 1–2 sprints | all + taskstoissues |
+| 6. Greenfield | Intermediate | 1–2 days | init → vision → per-epic |
+| 7. Brownfield Discovery | Intermediate | 2–6 hr | discovery → standard cycle |
+| 8. Refactor under SDD | Advanced | 1–2 weeks | reverse-engineer → strangler fig |
+| 9. Compliance | Advanced | +30–50% | + checklist + analyze with compliance mode |
 
 ---
 
-> 🚀 **Готові до практики?** Перейдіть до `TASKS.md` — там 7 практичних задач, на яких можна відточити кожен сценарій.
+## Recommendations — Where to start?
+
+### If you are new to spec-kit
+→ **Scenario 1** (Quick Spec Flow) on a single small bug. Then **Scenario 2** on a medium feature.
+
+### If you are introducing spec-kit to a team
+→ **Scenario 3** (Constitution) as the first step. Then **Scenario 5** (Team Collaboration) as the process template.
+
+### If you have a legacy project
+→ **Scenario 7** (Brownfield Discovery) before the first `/specify`. Do not skip discovery.
+
+### If you are starting a new project
+→ **Scenario 6** (Greenfield) with a vision-spec → per-epic specs.
+
+### If you have compliance requirements
+→ **Scenario 9** at the constitution stage already — otherwise reworking later is three times harder.
+
+### If something went wrong
+→ **Scenario 4** (Re-spec / Reset). Do not heroically try to drive `/implement` to the end if the spec is broken.
+
+---
+
+> 🚀 **Ready to practice?** Move on to `TASKS.md` — it has 7 practical tasks where you can sharpen each scenario.

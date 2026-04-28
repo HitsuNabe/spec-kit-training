@@ -1,43 +1,43 @@
-# CONSTITUTION_GUIDE — Як писати і еволюціонувати конституцію проекту
+# CONSTITUTION_GUIDE — How to write and evolve a project constitution
 
-> Глибокий гайд по `.specify/memory/constitution.md`. Що це насправді, як писати, як підтримувати в робочому стані. Реальний приклад еволюції документа за 12 місяців проекту.
-
----
-
-## Що таке Constitution насправді
-
-Не «маркетинг команди», а **виконавчий контракт**. Кожен принцип має проходити простий тест:
-
-> Якщо я порушу його у `/speckit.plan`, чи можу побачити це у Constitution Check?
-
-Якщо ні — це не принцип, це лозунг, видаляйте.
-
-Constitution описує **технічні інженерні інваріанти** — те, що не змінюється від фічі до фічі. Конкретно — process-агностичні до засобів реалізації:
-
-- **Test-First** — це процес (тести *перед* кодом). Агностично до того, чи це pytest, чи jest, чи RSpec.
-- **API-First** — процес (контракт *перед* імплементацією). Агностично до OpenAPI / GraphQL / gRPC.
-- **Observability** — практика (кожен endpoint емітить структуровані дані). Агностично до structlog / zap / winston.
-
-Тобто це **«як ми приймаємо інженерні рішення»**, не «який стек ми використовуємо».
-
-### Що Constitution **НЕ** описує
-
-| Не описує | Куди це йде |
-|-----------|-------------|
-| Конкретний стек (FastAPI, React) | `plan.md` |
-| Конкретні бібліотеки (pytest, structlog) | `plan.md` |
-| Архітектурні рішення (CQRS, event sourcing) | ADR + `plan.md` |
-| Code organization (folder structure) | Шаблони + linters |
-| Scrum-процес, ритм спрінтів | Team handbook |
-| Code review правила | CODEOWNERS + branch protection |
-
-Constitution — про **інженерну дисципліну**, яку ваш AI-агент і ваші інженери дотримуються на кожній фічі, незалежно від того, *яку* фічу і *якими* інструментами робите.
+> A deep dive into `.specify/memory/constitution.md`. What it really is, how to write one, and how to keep it in working shape. A real-world example of how the document evolved over 12 months on a project.
 
 ---
 
-## Анатомія робочого принципу
+## What a Constitution actually is
 
-Кожен принцип складається з трьох частин: **rule**, **rationale**, **how to apply**.
+Not "team marketing", but an **executable contract**. Every principle has to pass a simple test:
+
+> If I violate it in `/speckit.plan`, will it show up in the Constitution Check?
+
+If not — it's not a principle, it's a slogan. Delete it.
+
+A constitution describes **technical engineering invariants** — the things that don't change from feature to feature. Specifically — process-agnostic to the means of implementation:
+
+- **Test-First** — a process (tests *before* code). Agnostic to whether it's pytest, jest, or RSpec.
+- **API-First** — a process (contract *before* implementation). Agnostic to OpenAPI / GraphQL / gRPC.
+- **Observability** — a practice (every endpoint emits structured data). Agnostic to structlog / zap / winston.
+
+In other words, it's about **"how we make engineering decisions"**, not "what stack we use".
+
+### What a Constitution does **NOT** describe
+
+| Doesn't describe | Where it goes |
+|------------------|---------------|
+| A specific stack (FastAPI, React) | `plan.md` |
+| Specific libraries (pytest, structlog) | `plan.md` |
+| Architectural decisions (CQRS, event sourcing) | ADR + `plan.md` |
+| Code organization (folder structure) | Templates + linters |
+| Scrum process, sprint cadence | Team handbook |
+| Code review rules | CODEOWNERS + branch protection |
+
+A constitution is about the **engineering discipline** your AI agent and your engineers follow on every feature, regardless of *which* feature you're building or *which* tools you're using.
+
+---
+
+## Anatomy of a working principle
+
+Every principle has three parts: **rule**, **rationale**, **how to apply**.
 
 ```markdown
 ## Principle 3: API-First (NON-NEGOTIABLE)
@@ -58,15 +58,15 @@ catches these in PR review, not in production.
   a contract artifact for endpoint changes.
 ```
 
-### Чому всі три частини обов'язкові
+### Why all three parts are mandatory
 
-**Без rationale** — через місяць принцип виглядає як абсурдна забаганка автора, через рік новачки його ігнорують. Rationale має бути конкретним фактом — інцидент, число, реальна проблема.
+**Without rationale** — in a month the principle looks like the author's arbitrary whim, in a year newcomers will ignore it. Rationale should be a concrete fact — an incident, a number, a real problem.
 
-**Без "how to apply"** — принцип не verifiable. Constitution Check не знає, як його перевірити, агент не знає, як йому слідувати.
+**Without "how to apply"** — the principle is not verifiable. The Constitution Check has no way to validate it, and the agent has no way to follow it.
 
-**Без rule** — це просто опис. Принцип має бути declarative і testable.
+**Without a rule** — it's just a description. A principle has to be declarative and testable.
 
-### Antipattern — принцип, який не працює
+### Antipattern — a principle that doesn't work
 
 ```markdown
 ## Principle 7: Quality
@@ -74,162 +74,162 @@ catches these in PR review, not in production.
 **Rule**: We value high-quality code.
 ```
 
-Ніяк не перевіриш, ніяк не порушиш — викидаємо.
+Can't verify it, can't violate it — throw it out.
 
 ---
 
-## MUST vs SHOULD vs MAY — не зловживайте MUST
+## MUST vs SHOULD vs MAY — don't overuse MUST
 
-Найпоширеніша помилка: команда пише вісім принципів, усі MUST. Через спрінт-два вони порушують пів-із-них, і MUST стає пустим звуком.
+The most common mistake: a team writes eight principles, all MUST. Within a sprint or two they violate half of them, and MUST becomes meaningless.
 
-**Правило**: 4–6 справжніх MUST, решта — SHOULD або MAY. Якщо порушення принципу не зупинить merge — це не MUST.
+**Rule of thumb**: 4–6 real MUSTs, the rest are SHOULD or MAY. If violating a principle won't block a merge — it's not a MUST.
 
-| Рівень | Семантика | Дія Constitution Check |
-|--------|-----------|------------------------|
-| **NON-NEGOTIABLE** | Абсолютний закон | Блокує merge без обговорення |
-| **MUST** | Обов'язково; виключення обґрунтовуються | Або виправляється, або йде в Complexity Tracking |
-| **SHOULD** | Рекомендується | Помічається ⚠️, дозволено deferred |
-| **MAY** | Оптимально, не обов'язково | Лише як guideline |
-
----
-
-## Стандартний каталог принципів
-
-З публічних прикладів spec-kit (`spec-driven.md` від GitHub) — стартовий набір категорій:
-
-- **Library-First** — нова функціональність створюється як standalone module з public interface
-- **CLI Interface Mandate** — кожен модуль має CLI-обгортку (text-in/text-out), щоб бути testable окремо
-- **Test-First** — тести написані до коду; якщо код пройшов тест із першого разу — тест слабкий
-- **Integration-First Testing** — інтеграційні тести важливіші за unit тести; mocks обмежено
-- **Simplicity** — додавання залежностей вимагає обґрунтування
-- **Anti-Abstraction** — забороняємо premature abstraction (DRY до third occurrence)
-- **Observability** — кожен сервіс пише structured logs з trace_id; metrics on critical paths
-- **Versioning** — semver на API; breaking changes тільки з major bump
-
-Це не «бери все», а stock-каталог. Реальна конституція ідеально містить 5–8 принципів, із яких 3–4 ваші специфічні.
+| Level | Semantics | Constitution Check action |
+|-------|-----------|---------------------------|
+| **NON-NEGOTIABLE** | Absolute law | Blocks merge with no discussion |
+| **MUST** | Required; exceptions must be justified | Either fixed, or moved to Complexity Tracking |
+| **SHOULD** | Recommended | Flagged with ⚠️, deferred is allowed |
+| **MAY** | Optimal, not required | Guideline only |
 
 ---
 
-## Як написати її з нуля — процес
+## Standard catalog of principles
 
-Найбільша помилка — *«посадили tech lead, він написав принципи за 2 години»*. Через тиждень команда мовчки нехтує половиною. Кращий шлях.
+From the public spec-kit examples (`spec-driven.md` from GitHub) — a starting set of categories:
 
-### Крок 1 — Пілот (1–2 фічі без конституції)
+- **Library-First** — new functionality is built as a standalone module with a public interface
+- **CLI Interface Mandate** — every module has a CLI wrapper (text-in/text-out) so it's testable in isolation
+- **Test-First** — tests are written before code; if the code passes the test on the first try, the test was weak
+- **Integration-First Testing** — integration tests are more important than unit tests; mocks are limited
+- **Simplicity** — adding dependencies requires justification
+- **Anti-Abstraction** — premature abstraction is forbidden (DRY only after the third occurrence)
+- **Observability** — every service writes structured logs with trace_id; metrics on critical paths
+- **Versioning** — semver on the API; breaking changes only with a major bump
 
-Champion + 1–2 інженери проходять повний spec-kit цикл на реальних задачах *без* `/speckit.constitution`. Що болить — записують. Що зайшло — теж. На виході — список із 10–15 «pain points» і «good vibes».
+This is not "take everything", it's a stock catalog. A real constitution ideally contains 5–8 principles, of which 3–4 are specific to your project.
 
-### Крок 2 — Drafting workshop (2 години)
+---
 
-Tech lead + staff + 1 product person сідають з цим списком і питають: *«який принцип, якби діяв, запобіг би цьому pain point?»*. Це дає 6–10 кандидатів.
+## How to write one from scratch — the process
 
-Викидаєте дублі, дивитесь на стандартний каталог — чи спільне щось формулюється краще.
+The biggest mistake — *"we sat the tech lead down and they wrote the principles in 2 hours"*. A week later the team silently ignores half of them. There's a better way.
 
-### Крок 3 — Запуск `/speckit.constitution` (15 хвилин)
+### Step 1 — Pilot (1–2 features without a constitution)
 
-У чаті агента — детальний промпт. **Не** один рядок «створи принципи», а повний контекст:
+A champion + 1–2 engineers go through the full spec-kit cycle on real tasks *without* `/speckit.constitution`. They write down what hurts. They also write down what worked well. The output is a list of 10–15 "pain points" and "good vibes".
+
+### Step 2 — Drafting workshop (2 hours)
+
+Tech lead + staff + 1 product person sit down with this list and ask: *"what principle, if it had been in force, would have prevented this pain point?"* That gives you 6–10 candidates.
+
+Drop duplicates, look at the standard catalog — maybe something common is phrased better there.
+
+### Step 3 — Run `/speckit.constitution` (15 minutes)
+
+In the agent chat — a detailed prompt. **Not** a one-liner like "create some principles", but full context:
 
 ```
 /speckit.constitution
 
-Контекст: B2B SaaS на Python 3.11 + FastAPI на бекенді,
-React 18 + TypeScript на фронтенді, Postgres 16, monorepo.
-Команда — 6 інженерів (3 fullstack, 2 backend, 1 frontend).
+Context: B2B SaaS on Python 3.11 + FastAPI on the backend,
+React 18 + TypeScript on the frontend, Postgres 16, monorepo.
+Team — 6 engineers (3 fullstack, 2 backend, 1 frontend).
 
-Створи Project Constitution v1.0.0 із наступними принципами:
+Create Project Constitution v1.0.0 with the following principles:
 
 1. Test-First (NON-NEGOTIABLE)
-   Rule: всі нові backend-модулі мають pytest-тести; coverage на нових
-   або модифікованих файлах ≥ 75%.
-   Rationale: на попередньому проекті команди було 4 регресії за квартал
-   у core domain, які unit-тести зловили б; одна дійшла до production
-   і призвела до 02:00 UTC rollback.
-   How to apply: /speckit.tasks ставить test-задачі ПЕРЕД impl-задачами;
-   CI fail при < 75% coverage diff.
+   Rule: all new backend modules must have pytest tests; coverage on new
+   or modified files ≥ 75%.
+   Rationale: on the previous project the team had 4 regressions per quarter
+   in core domain that unit tests would have caught; one made it to production
+   and led to a 02:00 UTC rollback.
+   How to apply: /speckit.tasks places test tasks BEFORE impl tasks;
+   CI fails when coverage diff < 75%.
 
 2. Type Safety (MUST)
-   Rule: backend MUST type-check під mypy --strict; frontend — tsc --strict.
-   Any/type:ignore/as any потребують inline-коментаря з обґрунтуванням.
-   Rationale: 2 з 4 incidents у попередньому проекті — runtime type errors,
-   які strict typing виявив би на PR review.
+   Rule: backend MUST type-check under mypy --strict; frontend — tsc --strict.
+   Any/type:ignore/as any require an inline comment with justification.
+   Rationale: 2 of 4 incidents in the previous project were runtime type errors
+   that strict typing would have caught at PR review.
    How to apply: pre-commit hook + CI gates.
 
 3. API-First (MUST)
-   Rule: кожен новий endpoint має OpenAPI fragment у specs/<feature>/contracts/
-   ДО handler-коду. TS-клієнти генеруються з OpenAPI через openapi-typescript.
-   Rationale: 1 з 4 incidents — schema drift backend↔frontend.
-   How to apply: /speckit.plan Phase 1 MUST продукує contracts/*.yaml.
+   Rule: every new endpoint has an OpenAPI fragment in specs/<feature>/contracts/
+   BEFORE handler code. TS clients are generated from OpenAPI via openapi-typescript.
+   Rationale: 1 of 4 incidents — schema drift between backend and frontend.
+   How to apply: /speckit.plan Phase 1 MUST produce contracts/*.yaml.
 
 4. Observability (MUST)
-   Rule: кожен endpoint і background task емітить structured log entry
-   (structlog) з request_id, actor_id, duration_ms, outcome.
-   Rationale: попередній incident #4 — повільний endpoint, який без
-   duration_ms-метрик debug-али 3 години.
-   How to apply: middleware зареєстровано глобально; /speckit.tasks Phase 6
-   має задачу "verify structured logs".
+   Rule: every endpoint and background task emits a structured log entry
+   (structlog) with request_id, actor_id, duration_ms, outcome.
+   Rationale: previous incident #4 — a slow endpoint that took 3 hours to
+   debug because we had no duration_ms metrics.
+   How to apply: middleware registered globally; /speckit.tasks Phase 6
+   has a "verify structured logs" task.
 
 5. Performance Budget (SHOULD)
-   Rule: list endpoints < 300ms p95 на 10K rows; detail endpoints < 150ms p95;
+   Rule: list endpoints < 300ms p95 on 10K rows; detail endpoints < 150ms p95;
    frontend FCP < 1.5s.
-   Rationale: без явного бюджету регресії можуть тижнями лишатись непоміченими.
-   How to apply: perf-test задача у Phase 6 для list/aggregation endpoints.
+   Rationale: without an explicit budget, regressions can sit unnoticed for weeks.
+   How to apply: perf-test task in Phase 6 for list/aggregation endpoints.
 
 6. Simplicity (SHOULD)
-   Rule: нова runtime-залежність потребує RFC у docs/rfc/.
-   Dev-залежності (linter, test runner) — без RFC.
-   Rationale: package.json і pyproject.toml швидко розростаються; платимо
-   audit/CVE/upgrade-податок за невикористані deps.
-   How to apply: /speckit.plan research.md MUST показує "Alternatives
-   considered" включно зі stdlib option для нових deps.
+   Rule: a new runtime dependency requires an RFC in docs/rfc/.
+   Dev dependencies (linter, test runner) — no RFC.
+   Rationale: package.json and pyproject.toml grow fast; we pay an
+   audit/CVE/upgrade tax on deps we don't use.
+   How to apply: /speckit.plan research.md MUST show "Alternatives
+   considered" including the stdlib option for new deps.
 
 Governance:
-- Зміни до MUST/NON-NEGOTIABLE — RFC у docs/rfc/<num>-<slug>.md + 2 staff approve
-- SHOULD/MAY — 1 staff approve
-- Wording fix (typo, example) — 1 approve, PATCH bump
-- Versioning: PATCH/wording, MINOR/новий принцип, MAJOR/видалення MUST
-- Quarterly review на ретроспективі
+- Changes to MUST/NON-NEGOTIABLE — RFC in docs/rfc/<num>-<slug>.md + 2 staff approvals
+- SHOULD/MAY — 1 staff approval
+- Wording fix (typo, example) — 1 approval, PATCH bump
+- Versioning: PATCH/wording, MINOR/new principle, MAJOR/removal of MUST
+- Quarterly review at retro
 
-Дата ratification: today.
-Дата last_amended: today.
-Версія: 1.0.0.
+Ratification date: today.
+Last amended date: today.
+Version: 1.0.0.
 ```
 
-Так — це довгий промпт. Це нормально. Constitution — найважливіший документ проекту, тому 15 хвилин на промпт виправдані.
+Yes — this is a long prompt. That's fine. The constitution is the most important document in the project, so 15 minutes spent on the prompt is justified.
 
-### Крок 4 — Перевірка згенерованого
+### Step 4 — Review what was generated
 
-Перегляньте файл уважно:
+Look the file over carefully:
 
-1. **Жодних `[ALL_CAPS]` placeholder-ів** не залишилось (агент мав їх замінити; іноді пропускає).
-2. **Версія `1.0.0`**, дати `ratification_date` і `last_amended_date` сьогоднішні в ISO-форматі.
-3. **Sync Impact Report** угорі є і має сенс.
+1. **No `[ALL_CAPS]` placeholders** left (the agent should have replaced them; sometimes it skips one).
+2. **Version is `1.0.0`**, the `ratification_date` and `last_amended_date` are today's date in ISO format.
+3. **Sync Impact Report** is at the top and makes sense.
 
-Якщо щось не так — запустіть команду ще раз із поправкою:
-
-```
-/speckit.constitution Принцип 5 (Performance Budget) сформулюй чіткіше:
-поясни, чим вимірюється p95 (testing fixture-и в CI з seed-даними).
-```
-
-Команда модифікує файл (а не пише з нуля) і bump-не PATCH версію (1.0.0 → 1.0.1).
-
-### Крок 5 — Circulation у команді (3–5 робочих днів)
-
-Файл відкритий для коментарів усієї команди в PR. Цикл «коментар → правка → знову `/speckit.constitution` із оновленими формулюваннями → bump».
-
-### Крок 6 — Підкоригувати залежні шаблони
-
-Sync Impact Report сказав, що шаблони треба оновити. Це означає, що `.specify/templates/plan-template.md` (і `spec-template.md`, `tasks-template.md`) тепер мають включити нову Constitution Check таблицю з вашими принципами.
-
-Шаблони редагуєте руками або просите агента:
+If something is off — run the command again with a correction:
 
 ```
-Онови `.specify/templates/plan-template.md` — додай у секцію Constitution
-Check рядки таблиці для всіх 6 принципів.
+/speckit.constitution Reword Principle 5 (Performance Budget) more precisely:
+explain how p95 is measured (testing fixtures in CI with seed data).
 ```
 
-Це one-time робота. Після — кожен `/speckit.plan` буде використовувати ваші принципи у Constitution Check.
+The command modifies the file (instead of writing it from scratch) and bumps the PATCH version (1.0.0 → 1.0.1).
 
-### Крок 7 — Ratification commit
+### Step 5 — Circulation in the team (3–5 working days)
+
+The file is open for comments from the whole team in the PR. Cycle: "comment → edit → run `/speckit.constitution` again with the updated wording → bump".
+
+### Step 6 — Adjust dependent templates
+
+The Sync Impact Report said templates need to be updated. That means `.specify/templates/plan-template.md` (and `spec-template.md`, `tasks-template.md`) now need to include a new Constitution Check table with your principles.
+
+You either edit the templates by hand or ask the agent:
+
+```
+Update `.specify/templates/plan-template.md` — add table rows for all 6
+principles to the Constitution Check section.
+```
+
+This is a one-time job. After that, every `/speckit.plan` will use your principles in the Constitution Check.
+
+### Step 7 — Ratification commit
 
 ```bash
 git add .specify/
@@ -246,17 +246,17 @@ Initial constitution with 6 principles:
 Constitution Check enforced via /speckit.plan."
 ```
 
-PR з ratification — нехай уся команда approve-ить. Це не бюрократія: підпис команди = команда дійсно прочитала і погодилась дотримуватись.
+PR for ratification — get the whole team to approve. This isn't bureaucracy: the team's signature = the team has actually read it and agreed to follow it.
 
 ---
 
-## Як тримати її живою
+## How to keep it alive
 
-Тепер найскладніше — після ratification конституція починає **дрейфувати**. Команда змінює стек, додаються нові ролі, з'ясовується, що принцип занадто строгий. Без активного підтримання за пів року це «mythologized document», який ніхто не читає.
+Now the hardest part — after ratification the constitution starts to **drift**. The team changes the stack, new roles are added, you find out a principle is too strict. Without active maintenance, in six months it becomes a "mythologized document" that nobody reads.
 
-### Інструменти, які пропонує spec-kit
+### Tools spec-kit provides
 
-**Sync Impact Report.** При кожному запуску `/speckit.constitution` агент додає вгорі файлу HTML-коментар:
+**Sync Impact Report.** On every run of `/speckit.constitution` the agent adds an HTML comment at the top of the file:
 
 ```html
 <!-- Sync Impact Report
@@ -268,54 +268,54 @@ Version bump: 1.2.0 → 1.3.0 (MINOR — broader scope)
 -->
 ```
 
-Це нагадування: коли в конституції щось змінилось, варто перевірити шаблони і оновити їх, якщо потрібно.
+This is a reminder: when something changed in the constitution, you should check the templates and update them if needed.
 
-**Constitution Check у `/speckit.plan`.** Якщо ви заклали свою конституцію в шаблон, вона *активно* перевіряється на кожній фічі. Це той самий механізм, який не дає їй стати документом-привидом.
+**Constitution Check in `/speckit.plan`.** If you've embedded your constitution in the template, it's *actively* checked on every feature. That's the same mechanism that prevents it from becoming a ghost document.
 
-> ⚠️ Якщо у вас Constitution Check ніколи не fail-ить — або принципи занадто м'які, або шаблон їх не застосовує. Перевіряйте раз на квартал, що `plan.md`-и реально містять Constitution Check таблицю з відмітками.
+> ⚠️ If your Constitution Check never fails — either the principles are too soft, or the template doesn't enforce them. Verify once per quarter that `plan.md` files actually contain a Constitution Check table with marks.
 
 ### Amendment workflow
 
 ```
 docs/rfc/0007-loosen-test-coverage-rule.md
-├── Context: чому пропонуємо змінити
-├── Current rule: цитата з constitution.md
-├── Proposed change: новий текст
-├── Impact: на які активні specs це впливає
-├── Migration: чи треба переписувати щось у відкритих specs
+├── Context: why we're proposing a change
+├── Current rule: quote from constitution.md
+├── Proposed change: new text
+├── Impact: which active specs this affects
+├── Migration: do we need to rewrite anything in open specs
 └── Approval: 2 staff sign-off
 ```
 
-Після merge RFC — запускаєте `/speckit.constitution` із промптом «застосуй RFC-0007» — агент зробить правку і Sync Impact Report.
+After the RFC is merged, you run `/speckit.constitution` with the prompt "apply RFC-0007" — the agent makes the edit and produces the Sync Impact Report.
 
-**Bump versionов за semver:**
+**Version bump per semver:**
 
-| Зміна | Bump | Приклад |
-|-------|------|---------|
-| Wording, fix typo, додано example | PATCH | 1.2.0 → 1.2.1 |
-| Додано новий принцип, розширено scope | MINOR | 1.2.1 → 1.3.0 |
-| Видалено принцип, перевизначено MUST, змінено governance | MAJOR | 1.3.0 → 2.0.0 |
+| Change | Bump | Example |
+|--------|------|---------|
+| Wording, fix typo, added example | PATCH | 1.2.0 → 1.2.1 |
+| New principle added, scope expanded | MINOR | 1.2.1 → 1.3.0 |
+| Principle removed, MUST redefined, governance changed | MAJOR | 1.3.0 → 2.0.0 |
 
 ### Quarterly review
 
-На retro раз на квартал — 30 хвилин відкриваєте конституцію разом і питаєте по кожному принципу два питання:
+At retro, once per quarter — spend 30 minutes opening the constitution together and asking two questions about each principle:
 
-1. *Чи реально ми його дотримуємось?* Якщо ні — або принцип нерелевантний (видаляйте), або є тертя у виконанні (виявляйте і фіксіть).
-2. *Чи Constitution Check у /plan його реально перевіряв за останні 3 місяці?* Якщо ні — або у плані немає чого перевіряти, або шаблон зламаний.
+1. *Are we actually following it?* If not — either the principle is irrelevant (delete it), or there's friction in execution (find it and fix it).
+2. *Has Constitution Check in /plan actually enforced it in the last 3 months?* If not — either there's nothing to check in the plan, or the template is broken.
 
-Це той ритуал, який і відрізняє «живу» конституцію від «mythologized document».
+This is the ritual that distinguishes a "living" constitution from a "mythologized document".
 
 ---
 
-## Сценарії змін
+## Change scenarios
 
-### Сценарій A — Змінюється стек
+### Scenario A — The stack changes
 
-Наприклад, мігруємо з Express на FastAPI. Конституція *не повинна* згадувати конкретні бібліотеки чи фреймворки — це робота шаблонів і `plan.md`. Якщо ваша конституція каже «MUST use FastAPI» — це warning sign, перепишіть на «MUST use a typed Python web framework» (або взагалі видаліть, бо це деталь, яка живе у `plan.md`).
+For example, you migrate from Express to FastAPI. The constitution *should not* mention specific libraries or frameworks — that's the job of templates and `plan.md`. If your constitution says "MUST use FastAPI" — that's a warning sign, rewrite it as "MUST use a typed Python web framework" (or just delete it, because it's a detail that lives in `plan.md`).
 
-### Сценарій B — Змінюється практика
+### Scenario B — A practice changes
 
-Наприклад, ввели pre-commit hook, якого раніше не було. Це доповнення «How to apply» секції релевантного принципу, без зміни самого правила:
+For example, you introduce a pre-commit hook that wasn't there before. That's an addition to the "How to apply" section of the relevant principle, without changing the rule itself:
 
 ```diff
   ## Principle 1: Test-First
@@ -325,137 +325,137 @@ docs/rfc/0007-loosen-test-coverage-rule.md
   - CI runs full pytest suite on PRs.
 ```
 
-Це PATCH bump.
+That's a PATCH bump.
 
-### Сценарій C — Принцип виявився надмірним
+### Scenario C — A principle turned out to be excessive
 
-Наприклад, поставили «100% coverage» — за квартал зрозуміли, що це жере час, реальної цінності немає, треба «75% на нових модулях». Це MAJOR bump, бо змінюється поведінка MUST.
+For example, you set "100% coverage" — and after a quarter you realize it's eating time, has no real value, and "75% on new modules" is enough. That's a MAJOR bump because it changes MUST behavior.
 
-RFC з конкретним аналізом:
+RFC with concrete analysis:
 
-> За Q1 2026 ми витратили орієнтовно 18 інженеро-годин на coverage gap, які жоден реальний bug ніколи не торкнувся. Пропонуємо зменшити до 75% на нових модулях; legacy залишається на поточному рівні.
+> In Q1 2026 we spent roughly 18 engineer-hours on coverage gaps that no real bug ever touched. We propose reducing to 75% on new modules; legacy stays at the current level.
 
-Без RFC — не міняйте. Інакше прецедент «принципи можна тихо ослабити» руйнує дію конституції на всіх рівнях.
+Without an RFC — don't change it. Otherwise the precedent "principles can be quietly weakened" undermines the constitution at every level.
 
 ---
 
-## Реальний приклад еволюції за 12 місяців
+## A real example of evolution over 12 months
 
-Щоб ви бачили, як конституція виглядає у часі:
+So you can see what a constitution looks like over time:
 
-### v1.0.0 (start, місяць 1)
+### v1.0.0 (start, month 1)
 
 ```
-6 принципів: Test-First (NON-NEGOTIABLE), Type Safety (MUST),
+6 principles: Test-First (NON-NEGOTIABLE), Type Safety (MUST),
 API-First (MUST), Observability (MUST), Performance (SHOULD),
 Simplicity (SHOULD).
 Ratification: 2026-04-28.
 ```
 
-### v1.0.1 (тиждень 3)
+### v1.0.1 (week 3)
 
-PATCH — fix typo, додали приклад у Test-First секції.
+PATCH — fix typo, added an example to the Test-First section.
 
-### v1.1.0 (місяць 2)
+### v1.1.0 (month 2)
 
-MINOR — додали Principle 7: Performance perf-budget reflection (SHOULD), бо за пів спрінта виявили patterns по slow endpoints. Прийшов з RFC-002.
+MINOR — added Principle 7: Performance perf-budget reflection (SHOULD), because half a sprint in we noticed patterns around slow endpoints. Came in via RFC-002.
 
-### v1.1.1 (місяць 3)
+### v1.1.1 (month 3)
 
-PATCH — у Observability секції замінили generic «structured logs» на конкретний «structlog with `request_id`», після того як на ретро виявили, що різні модулі логують у різних форматах.
+PATCH — in the Observability section, replaced generic "structured logs" with a concrete "structlog with `request_id`", after retro revealed that different modules were logging in different formats.
 
-### v2.0.0 (місяць 6)
+### v2.0.0 (month 6)
 
-MAJOR — Test-First з NON-NEGOTIABLE на MUST (це послаблення), replacing страшніший NON-NEGOTIABLE blocking gate. RFC-007 з аналізом: «3/4 виключень з Test-First у Q2 були обґрунтовані, не deserved blocker». Дозволяємо exceptions через Complexity Tracking.
+MAJOR — Test-First downgraded from NON-NEGOTIABLE to MUST (this is a relaxation), replacing a stricter NON-NEGOTIABLE blocking gate. RFC-007 with the analysis: "3/4 exceptions to Test-First in Q2 were justified, didn't deserve a blocker". We allow exceptions through Complexity Tracking.
 
-### v2.1.0 (місяць 9)
+### v2.1.0 (month 9)
 
-MINOR — додали Principle 8: Security Review (MUST) як реакцію на security incident.
+MINOR — added Principle 8: Security Review (MUST) as a reaction to a security incident.
 
-### v2.2.0 (місяць 11)
+### v2.2.0 (month 11)
 
-MINOR — Principle 5 (Performance Budget) з SHOULD на MUST. RFC-012: за квартал було 3 регресії > 25%, які SHOULD не заблокував.
+MINOR — Principle 5 (Performance Budget) promoted from SHOULD to MUST. RFC-012: in one quarter there were 3 regressions > 25% that SHOULD didn't block.
 
-### v2.2.1 (місяць 12)
+### v2.2.1 (month 12)
 
-PATCH — оновили Performance budget thresholds на основі реальних production метрик (з Grafana).
+PATCH — updated Performance budget thresholds based on real production metrics (from Grafana).
 
-**Через 12 місяців конституція має 8 принципів, версія 2.2.x, історія amendments — у git log і у `docs/rfc/`. Це жива конституція.**
+**After 12 months the constitution has 8 principles, version 2.2.x, with the amendment history in git log and `docs/rfc/`. That's a living constitution.**
 
 ---
 
-## Найчастіші помилки
+## Most common mistakes
 
-### Маркетингові формулювання
+### Marketing-style wording
 
-❌ «We value engineering excellence», «Quality is everyone's responsibility».
+❌ "We value engineering excellence", "Quality is everyone's responsibility".
 
-Викидайте, замініть конкретними правилами. Якщо ви не можете описати, як принцип fail'ить Constitution Check, він зайвий.
+Throw it out, replace it with concrete rules. If you can't describe how the principle fails the Constitution Check, it's dead weight.
 
-### Перебір MUST
+### Overusing MUST
 
-❌ Все MUST → нічого не MUST. Реальна тарантас на ремонті: одного спрінта команда не дотримується 4 з 8 MUST, всі сказали «давайте обговоримо потім», потім — нічого не міняється.
+❌ Everything MUST → nothing is MUST. Real-world clunker on the repair lift: in one sprint the team violates 4 of 8 MUSTs, everyone says "let's discuss it later", and then nothing changes.
 
-✅ Тримайте 4–6 справжніх MUST. Решта — SHOULD.
+✅ Keep 4–6 real MUSTs. The rest are SHOULDs.
 
-### Constitution як waterfall
+### Constitution as waterfall
 
-❌ Пишемо раз і не оновлюємо. Через рік документ виглядає ніби з іншого проекту.
+❌ Write it once and never update it. A year later the document looks like it belongs to a different project.
 
-✅ Quarterly review + Sync Impact Report при кожній зміні.
+✅ Quarterly review + Sync Impact Report on every change.
 
 ### Constitution by Tech Lead alone
 
-❌ Без участі команди — інші не бачать процес, не відчувають authorship, не дотримуються.
+❌ Without team participation — others don't see the process, don't feel ownership, don't follow it.
 
-✅ Drafting workshop з участю 3–5 людей, public PR на ratification.
+✅ A drafting workshop with 3–5 people involved, public PR for ratification.
 
-### Constitution без rationale
+### Constitution without rationale
 
-❌ Принципи без обґрунтування. Через 6 місяців нікому не зрозуміло *чому*, починається cargo cult.
+❌ Principles without justification. In 6 months nobody understands *why*, and a cargo cult sets in.
 
-✅ Кожен принцип з конкретним фактом-rationale, бажано із інцидентом або числовою метрикою.
+✅ Every principle has a concrete fact-rationale, ideally with an incident or numerical metric.
 
-### Constitution Check toothless
+### Toothless Constitution Check
 
-❌ У `/speckit.plan` шаблон не реально перевіряє нічого.
+❌ The `/speckit.plan` template doesn't actually check anything.
 
-✅ Перевірте `.specify/templates/plan-template.md` — секція Constitution Check має бути таблицею з вашими принципами, не текстом «check whatever applies».
+✅ Verify `.specify/templates/plan-template.md` — the Constitution Check section should be a table with your principles, not the text "check whatever applies".
 
-### Принципи занадто специфічні
+### Principles that are too specific
 
-❌ «MUST use SQLAlchemy 2.0 with async session». Це не принцип, це деталь з `plan.md`.
+❌ "MUST use SQLAlchemy 2.0 with async session". That's not a principle, it's a `plan.md` detail.
 
-✅ Принцип — «MUST use async ORM з explicit transaction boundaries».
+✅ The principle is "MUST use an async ORM with explicit transaction boundaries".
 
-### Constitution не синхронізована з шаблонами
+### Constitution out of sync with templates
 
-❌ Sync Impact Report ігнорують, шаблони показують старі формулювання, у `plan.md` Constitution Check посилається на принцип v1.0, хоча конституція вже v1.3.
+❌ Sync Impact Report is ignored, templates show old wording, and `plan.md` Constitution Check references principle v1.0 even though the constitution is already v1.3.
 
-✅ При кожному `/speckit.constitution` обов'язково перевірити, чи треба оновити шаблони — Sync Impact Report підкаже які.
-
----
-
-## Чек-лист перед ratification v1.0.0
-
-- [ ] 4–6 справжніх MUST, решта SHOULD/MAY
-- [ ] Кожен принцип має rule + rationale + how to apply
-- [ ] Rationale містить конкретний факт (інцидент, число, реальний приклад)
-- [ ] Принципи технологічно агностичні (не згадують FastAPI, React, etc.)
-- [ ] Жодних `[ALL_CAPS]` placeholder-ів
-- [ ] Frontmatter містить version, ratification_date, last_amended_date
-- [ ] Sync Impact Report згенерований
-- [ ] Шаблони (`spec-template.md`, `plan-template.md`, `tasks-template.md`) оновлені під нові принципи
-- [ ] Governance секція описує amendment процес
-- [ ] PR з ratification approve-нув staff engineer
-- [ ] Команда прочитала і не має блокуючих заперечень
+✅ On every `/speckit.constitution` run, always check whether templates need updating — the Sync Impact Report tells you which.
 
 ---
 
-## Що читати далі
+## Pre-ratification checklist for v1.0.0
 
-- **`SPEC-KIT-docs.md`** — секція 8.5 Project Memory, як constitution лягає у загальну архітектуру.
-- **`SCRUM_INTEGRATION.md`** — хто пише constitution у командному контексті.
-- **`SPEC_KIT_USE_CASES.md`** — Сценарій 3 (Constitution Setup).
+- [ ] 4–6 real MUSTs, the rest SHOULD/MAY
+- [ ] Each principle has rule + rationale + how to apply
+- [ ] Rationale contains a concrete fact (incident, number, real example)
+- [ ] Principles are technology-agnostic (no mention of FastAPI, React, etc.)
+- [ ] No `[ALL_CAPS]` placeholders
+- [ ] Frontmatter contains version, ratification_date, last_amended_date
+- [ ] Sync Impact Report generated
+- [ ] Templates (`spec-template.md`, `plan-template.md`, `tasks-template.md`) updated for the new principles
+- [ ] Governance section describes the amendment process
+- [ ] Ratification PR approved by a staff engineer
+- [ ] Team has read it and has no blocking objections
 
-> 🚀 **Найважливіша порада**: не намагайтеся написати «ідеальну» конституцію v1.0. Напишіть «достатньо хорошу» v1.0, ratify, і дайте їй еволюціонувати через RFC. За 6 місяців з реальним досвідом ви знатимете, *що саме* команді треба, незрівнянно краще, ніж знаєте на старті.
+---
+
+## What to read next
+
+- **`SPEC-KIT-docs.md`** — section 8.5 Project Memory, how the constitution fits into the overall architecture.
+- **`SCRUM_INTEGRATION.md`** — who writes the constitution in a team setting.
+- **`SPEC_KIT_USE_CASES.md`** — Scenario 3 (Constitution Setup).
+
+> 🚀 **Most important advice**: don't try to write the "perfect" v1.0 constitution. Write a "good enough" v1.0, ratify it, and let it evolve through RFCs. After 6 months of real experience you'll know *exactly* what the team needs, far better than you do at the start.

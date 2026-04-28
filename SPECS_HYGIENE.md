@@ -1,65 +1,65 @@
-# SPECS_HYGIENE — Як тримати `specs/` у порядку на масштабі
+# SPECS_HYGIENE — How to keep `specs/` tidy at scale
 
-> На дрібному проекті (10–30 фічей) flat-структура `specs/` працює без проблем. На середньому й великому (100+ фічей за рік) без активного догляду директорія перетворюється на смітник. Цей документ — про lifecycle states, archival pattern, domain hierarchy, manifest файли, quarterly grooming ritual і скрипти для автоматизації.
-
----
-
-## Чому це важливо
-
-При 200+ папках у `specs/` ви зіткнетесь із:
-
-- `ls specs/` стає некорисним — занадто багато рядків
-- `grep -r` сповільнюється і тоне у шумі
-- 60–70% фіч уже задеплоєно і ніхто не повертається до їхніх specs — але вони лежать і відволікають
-- Нові інженери не знають, де "живі" специфікації, а де історичні
-- Specs, що були *скасовані* (фічу скасували, але папка лишилась), плутаються з активними
-- Specs, що були *replaced* (нова версія фічі), співіснують зі старою — і незрозуміло, яка є source of truth
-
-Spec-kit за дефолтом проти цього **нічого не робить**. Це питання **командної curation discipline**, а не інструменту.
+> On a small project (10–30 features) a flat `specs/` structure works without issues. On medium and large ones (100+ features per year), without active care the directory turns into a junk drawer. This document covers lifecycle states, the archival pattern, domain hierarchy, manifest files, the quarterly grooming ritual, and scripts for automation.
 
 ---
 
-## Lifecycle статуси
+## Why this matters
 
-Кожен `spec.md` має у frontmatter поле `status`:
+With 200+ folders in `specs/` you'll run into:
+
+- `ls specs/` becomes useless — too many lines
+- `grep -r` slows down and drowns in noise
+- 60–70% of features are already deployed and nobody comes back to their specs — but they sit there and distract
+- New engineers don't know where the "live" specs are versus the historical ones
+- Specs that were *cancelled* (the feature was dropped but the folder stayed) get confused with active ones
+- Specs that were *replaced* (a new version of the feature) coexist with the old one — and it's unclear which is the source of truth
+
+By default, spec-kit does **nothing** about this. It's a question of **team curation discipline**, not tooling.
+
+---
+
+## Lifecycle statuses
+
+Every `spec.md` carries a `status` field in its frontmatter:
 
 ```yaml
 ---
-status: active           # активна робота
+status: active           # work in progress
 # OR
-status: implemented      # задеплоєно, але ще "свіже"
+status: implemented      # shipped, but still "fresh"
 # OR
-status: archived         # старе, переміщено в _archive/
+status: archived         # old, moved to _archive/
 # OR
-status: superseded       # замінено новою версією, не використовуємо
+status: superseded       # replaced by a new version, no longer in use
 # OR
-status: dropped          # скасовано
+status: dropped          # cancelled
 ---
 ```
 
-Додаткові поля для контексту:
+Additional fields for context:
 
 ```yaml
 ---
 status: implemented
 implemented_date: 2026-04-15
 jira_id: PROJ-1234
-# або:
+# or:
 status: superseded
 superseded_by: 042-new-search-v2
-# або:
+# or:
 status: dropped
 archived_reason: "feature scope rejected by product"
 ---
 ```
 
-Це механічно дає вам відповідь на «що тут живе, а що мертве» через скрипти або просто `grep`.
+This mechanically gives you an answer to "what's alive here and what's dead" via scripts or just plain `grep`.
 
 ---
 
-## Фізичне переміщення архіву
+## Physically moving the archive
 
-Раз на квартал (на retro або окремим ритуалом) проходитесь по specs зі статусом `implemented` старше N місяців і фізично рухаєте їх:
+Once a quarter (at retro or as a separate ritual), walk through specs with status `implemented` older than N months and physically move them:
 
 ```
 specs/
@@ -79,30 +79,30 @@ specs/
     └── 008-stripe-webhooks/    ← active
 ```
 
-`_archive/` починається з підкреслення, тому в `ls` він лежить зверху і явно виділяється. Можете спокійно `git mv` — git history зберігає trail, посилання у старих PR ще ведуть до commit-ів, де папка існувала за старою адресою.
+`_archive/` starts with an underscore so it sits at the top of `ls` and stands out clearly. You can safely `git mv` — git history preserves the trail, and links in old PRs still resolve to the commits where the folder lived at its old address.
 
-> 💡 **Чому quarterly, не monthly**: квартал — достатньо довгий період, щоб «свіже implemented» стабілізувалось у production без пост-фактум змін. На monthly будете рухати, а через 2 тижні повертатись до spec.md для bug-fix-ів — це створює тертя.
+> 💡 **Why quarterly, not monthly**: a quarter is a long enough window for "freshly implemented" to stabilize in production without post-fact tweaks. On a monthly cadence you'd move things and then come back to spec.md two weeks later for a bug fix — that creates friction.
 
 ---
 
-## Видалення без жалю для truly-dead
+## Delete without regret for truly-dead specs
 
-Скасована фіча, яку ніхто не реалізує і не планує — просто `git rm specs/017-feature-we-dropped/`. У git history воно лишається назавжди:
+A cancelled feature that nobody will ship and nobody plans to ship — just `git rm specs/017-feature-we-dropped/`. It stays in git history forever:
 
 ```bash
-# Знайти видалені specs:
+# Find deleted specs:
 git log --diff-filter=D --summary | grep "specs/"
 ```
 
-Якщо колись треба буде підняти — `git checkout <commit>~ -- specs/017-feature/` поверне з історії.
+If you ever need to bring it back — `git checkout <commit>~ -- specs/017-feature/` will restore it from history.
 
-> ⚠️ **Не бійтесь видаляти.** Страх «а раптом знадобиться» якраз і створює смітник. Git — ваш undelete; використовуйте його.
+> ⚠️ **Don't be afraid to delete.** The "but what if we need it" fear is exactly what creates the junk drawer. Git is your undo; use it.
 
 ---
 
-## Domain hierarchy для нумерації
+## Domain hierarchy for numbering
 
-При 200+ фічах flat-нумерація `001`...`200` стає безглуздою (хто пам'ятає, що `127` робить?). Краще:
+At 200+ features, flat numbering `001`...`200` becomes meaningless (who remembers what `127` does?). Better:
 
 ```
 specs/
@@ -119,19 +119,19 @@ specs/
     └── 002-invoicing/
 ```
 
-Домен + локальна нумерація. Так у голові залишається «items/002-search», що краще, ніж «127-search» серед 200 інших чисел.
+Domain plus local numbering. That way "items/002-search" sticks in your head better than "127-search" lost among 200 other numbers.
 
-### Як це налаштувати у spec-kit
+### How to set this up in spec-kit
 
-1. Модифікувати `.specify/scripts/bash/create-new-feature.sh` — щоб запитувати домен і нумерувати в його межах.
-2. Або в `init-options.json` поставити `branch_numbering: timestamp` і номер взагалі ігнорувати, групуючи лише за доменами.
-3. Або через `extensions.yml` — кастомний `before_specify` hook, що питає: «домен?» і створює папку у правильному місці.
+1. Modify `.specify/scripts/bash/create-new-feature.sh` so it asks for the domain and numbers within that domain.
+2. Or in `init-options.json` set `branch_numbering: timestamp` and ignore the number entirely, grouping only by domain.
+3. Or via `extensions.yml` — a custom `before_specify` hook that asks "domain?" and creates the folder in the right place.
 
 ---
 
-## Manifest / index файл як точка входу
+## A manifest / index file as the entry point
 
-У корені проекту або у `specs/README.md` тримаєте автоматично згенерований індекс:
+In the project root or in `specs/README.md`, keep an auto-generated index:
 
 ```markdown
 # Specs Index (auto-generated, last updated 2026-04-28)
@@ -155,13 +155,13 @@ specs/
 - Dropped/deleted: 4
 ```
 
-Регенерується скриптом, який читає frontmatter усіх specs. У pre-commit hook або CI — щоб не ставав stale.
+It's regenerated by a script that reads the frontmatter of all specs. Wire it into a pre-commit hook or CI so it doesn't go stale.
 
 ---
 
 ## Search tooling
 
-Простий Python-скрипт ~50 рядків, який *читає frontmatter* всіх specs і підтримує запити:
+A simple ~50-line Python script that *reads frontmatter* across all specs and supports queries:
 
 ```python
 #!/usr/bin/env python3
@@ -190,7 +190,7 @@ if __name__ == '__main__':
     list_specs(**args)
 ```
 
-Використання:
+Usage:
 
 ```bash
 $ scripts/specs.py status=active domain=items
@@ -202,25 +202,25 @@ auth/003-sso         [implemented]  P1  PROJ-1389
 items/006-comments   [implemented]  P2  PROJ-1402
 ```
 
-Це 30 хвилин написати, але економить години на пошуку через місяці.
+Thirty minutes to write, but saves hours of searching months later.
 
-> 💡 **Розширення**: додайте підкоманди — `scripts/specs.py find <text>` для full-text search по spec.md, `scripts/specs.py drift` для виявлення specs, де код був змінений без оновлення spec.md.
+> 💡 **Extensions**: add subcommands — `scripts/specs.py find <text>` for full-text search across spec.md, `scripts/specs.py drift` to surface specs where the code changed without a spec.md update.
 
 ---
 
 ## Quarterly grooming ritual
 
-Той момент, коли реально розкидається сміття — **квартальний `specs/` grooming**. 30 хвилин на retro раз на 3 місяці.
+The moment when the trash actually gets taken out — the **quarterly `specs/` grooming**. Thirty minutes at retro, once every three months.
 
-### Чек-лист
+### Checklist
 
-1. **Список усіх `status: active`**, що старші 90 днів — або *реально* активні (хтось робить), або застрягли (треба archive/drop).
-2. **Список `implemented` старше 90 днів** — рухаємо у `_archive/<quarter>/`.
-3. **Список `superseded`** — перевіряємо, що нова версія дійсно покриває старі вимоги, і архівуємо стару.
-4. **Список skipped/dropped** — просто видаляємо.
-5. **Якщо в домені понад 30 specs** — обговорюємо подальший split.
+1. **List all `status: active`** older than 90 days — either *actually* active (someone is working on them) or stuck (need archive/drop).
+2. **List `implemented` older than 90 days** — move to `_archive/<quarter>/`.
+3. **List `superseded`** — verify the new version really covers the old requirements and archive the old one.
+4. **List skipped/dropped** — just delete them.
+5. **If a domain has more than 30 specs** — discuss further splitting.
 
-### Скрипт для підготовки до retro
+### A script to prep for retro
 
 ```bash
 #!/bin/bash
@@ -240,7 +240,7 @@ done
 echo ""
 echo "=== Implemented specs ready to archive ==="
 scripts/specs.py status=implemented | while read line; do
-    # ... аналогічно
+    # ... same as above
 done
 
 echo ""
@@ -248,45 +248,45 @@ echo "=== Domains with >30 active specs ==="
 scripts/specs.py status=active | awk -F'/' '{print $1}' | sort | uniq -c | awk '$1 > 30'
 ```
 
-### Без цього ритуалу
+### Without this ritual
 
-Будь-яка структура за рік перетвориться на смітник, бо це **не проблема структури**, а проблема **відсутності curation**.
-
----
-
-## Спеки на дрібниці — не пишемо
-
-Окрема дисципліна, яка зменшує проблему *в корені*: не кожна задача потребує `specs/<feature>/`.
-
-З `SPEC_KIT_USE_CASES.md` Сценарій 1 — Quick Spec Flow для дрібниць (баг-фікс, тривіальна зміна). Команда може вирішити правилом: «фічі менше 3 SP — без специфікації, лише code review». Це сильно зріже потік.
-
-З Discussion #152 цитата community: «Even for small features like 'Add login' we have to use spec-kit? Wouldn't we save more time if just use copilot Plan agent for small features?» — і відповідь спільноти: ні, не треба для всього.
-
-> 💡 Якщо ви робите спеку на кожну дрібницю — отримаєте 500 specs за рік. Якщо тільки на медіум-плюс задачі — 50–80, що цілком керовано.
+Any structure turns into a junk drawer within a year, because this is **not a structure problem** — it's a problem of **missing curation**.
 
 ---
 
-## Реалістична картинка для команди 5–10 за 2 роки
+## Don't write specs for trivia
 
-З нормальною дисципліною:
+A separate discipline that shrinks the problem *at the root*: not every task needs `specs/<feature>/`.
 
-- ~80 specs на рік (1.5 SP+ задач, дрібниці пропускаємо)
-- Через 2 роки — ~160 specs, з яких:
-  - ~30 active або recently shipped (живуть у `specs/<domain>/`)
-  - ~110 archived у `specs/_archive/<quarter>/`
+From `SPEC_KIT_USE_CASES.md` Scenario 1 — Quick Spec Flow for trivia (bug fixes, trivial changes). The team can adopt the rule: "features under 3 SP — no specification, just code review." That cuts the inflow significantly.
+
+From Discussion #152, a community quote: «Even for small features like 'Add login' we have to use spec-kit? Wouldn't we save more time if just use copilot Plan agent for small features?» — and the community's answer: no, you don't need it for everything.
+
+> 💡 If you write a spec for every trivial change, you'll end up with 500 specs in a year. If only for medium-and-up tasks — 50–80, which is perfectly manageable.
+
+---
+
+## A realistic picture for a 5–10 person team over 2 years
+
+With proper discipline:
+
+- ~80 specs per year (1.5 SP+ tasks; trivia skipped)
+- After 2 years — ~160 specs, of which:
+  - ~30 active or recently shipped (living in `specs/<domain>/`)
+  - ~110 archived in `specs/_archive/<quarter>/`
   - ~20 deleted (dropped/skipped)
-- 4 квартальних gromming-сесії
-- Один скрипт `specs.py` + auto-generated index
+- 4 quarterly grooming sessions
+- One `specs.py` script + auto-generated index
 
-**Цілком придатне для життя.**
+**Perfectly livable.**
 
-**Без** дисципліни — той самий проект через 2 роки матиме 320 specs у плоскому `specs/`, з яких 60% є мертвим вантажем, і нова людина перші 2 тижні буде питати «де у нас X?» бо нічого не знаходить.
+**Without** discipline — the same project after 2 years has 320 specs in a flat `specs/`, 60% of which are dead weight, and a new hire spends their first two weeks asking "where's our X?" because nothing is findable.
 
 ---
 
-## Принцип у Constitution для специфічного проекту
+## A Constitution principle for your specific project
 
-Додайте до constitution.md:
+Add to constitution.md:
 
 ```markdown
 ## Principle X: Specs Hygiene (SHOULD)
@@ -296,23 +296,23 @@ implemented specs older than 90 days into _archive/<YYYY>-Q<N>/.
 Dropped/skipped specs are deleted (not kept as zombies).
 Domains with > 30 active specs trigger a split discussion.
 
-**Rationale**: Без активної curation specs/ за рік перетворюється на
-смітник, де нова людина не може знайти source of truth і втрачає 30%
-часу onboarding.
+**Rationale**: Without active curation, specs/ turns into a junk drawer
+within a year — a new hire can't find the source of truth and loses 30%
+of their onboarding time.
 
 **How to apply**:
-- Pre-commit hook валідує frontmatter (`status`, `domain` поля обов'язкові)
-- Quarterly retro має 30-хвилинний slot на specs grooming
-- CI перевіряє, що `specs/README.md` (auto-index) свіжий
+- Pre-commit hook validates frontmatter (`status`, `domain` are required)
+- Quarterly retro reserves a 30-minute slot for specs grooming
+- CI verifies that `specs/README.md` (auto-index) is fresh
 ```
 
-Це робить проблему явним пунктом командної дисципліни, а не "ну колись поприбираємо".
+This makes the problem an explicit point of team discipline, not a "we'll clean up someday."
 
 ---
 
-## Антипатерни
+## Antipatterns
 
-### Спрінт-групування
+### Sprint-based grouping
 
 ```
 specs/
@@ -321,11 +321,11 @@ specs/
 └── sprint-14/
 ```
 
-❌ **Не робіть так**. Спрінт — часовий контейнер, фічі переростають його. Якщо `004-favorites` стартував у спрінті 13, не закрився, переїхав у 14 — куди ставити? Дублювати? Переносити?
+❌ **Don't do this.** A sprint is a time container; features outgrow it. If `004-favorites` started in sprint 13, didn't close, and slipped into 14 — where do you put it? Duplicate? Move?
 
-✅ **Правильно**: домени + frontmatter `sprint: 13` для запитів через скрипт.
+✅ **The right way**: domains plus frontmatter `sprint: 13` for queries via the script.
 
-### Глибока вкладеність
+### Deep nesting
 
 ```
 specs/
@@ -335,91 +335,91 @@ specs/
             └── 001-tiny-thing/
 ```
 
-❌ Складна навігація, важко знаходити, скрипти ускладнюються.
+❌ Hard to navigate, hard to find, complicates scripts.
 
-✅ Максимум 2 рівня: `specs/<domain>/<NNN-feature>/`.
+✅ Maximum two levels: `specs/<domain>/<NNN-feature>/`.
 
 ### Specs-as-tickets
 
-Папка `specs/` повторює всю структуру Jira backlog 1:1.
+The `specs/` folder mirrors the entire Jira backlog 1:1.
 
-❌ Створює надлишок: дрібні bug-fixes у specs, які не варті повної специфікації.
+❌ Creates bloat: trivial bug fixes show up as specs even though they don't warrant a full specification.
 
-✅ Specs тільки для того, що реально потребує специфікації — фічі ≥ 3 SP, складні рефакторинги, нові інтеграції.
+✅ Specs only for what really needs specification — features ≥ 3 SP, complex refactors, new integrations.
 
-### Не видаляти ніколи
+### Never deleting
 
-❌ «А раптом знадобиться» → 200 dead specs у `specs/`.
+❌ "What if we need it" → 200 dead specs in `specs/`.
 
-✅ Quarterly видалення dropped/skipped через `git rm`. Git історія = архів на крайній випадок.
+✅ Quarterly deletion of dropped/skipped specs via `git rm`. Git history is your archive of last resort.
 
-### Один великий файл
+### One huge file
 
-Замість `specs/<feature>/spec.md` + plan.md + ... — один файл `specs/all-features.md` з усім.
+Instead of `specs/<feature>/spec.md` + plan.md + ... — a single `specs/all-features.md` with everything in it.
 
-❌ Жодних `/speckit.*` команд не працюватимуть, повністю руйнує всю систему spec-kit.
+❌ None of the `/speckit.*` commands will work; it completely breaks the spec-kit system.
 
-✅ Дотримуйтесь стандартної структури spec-kit з окремими файлами.
+✅ Stick to the standard spec-kit structure with separate files.
 
 ---
 
-## Підтримка актуальності специфікацій між спрінтами
+## Keeping specifications current between sprints
 
-Окреме від archival завдання — підтримка **поточної актуальності** specs. `specs/<feature>/spec.md` створюється як snapshot моменту створення фічі. Через 6 місяців після ship-у вона перетворюється на історичний документ, але читачі продовжують її використовувати, думаючи що це поточна реальність.
+A separate task from archival — keeping specs **currently accurate**. `specs/<feature>/spec.md` is created as a snapshot of the moment the feature was authored. Six months after ship, it has turned into a historical document, but readers keep using it as if it described current reality.
 
-### Корінь проблеми
+### The root problem
 
-Specs у SDD натурально атомарні: один spec = одна зміна. Але продукт еволюціонює як **система**, а не як ланцюг ізольованих змін. Звідси розрив:
+Specs in SDD are naturally atomic: one spec = one change. But the product evolves as a **system**, not as a chain of isolated changes. Hence the gap:
 
-- `specs/001-user-auth/` описує auth, як його зробили в спрінті 3.
-- `specs/015-add-mfa/` додав MFA в спрінті 8.
-- `specs/023-passkeys/` замінив частину MFA на WebAuthn у спрінті 14.
-- `specs/031-session-management/` змінив timeout-и в спрінті 19.
+- `specs/001-user-auth/` describes auth as it was built in sprint 3.
+- `specs/015-add-mfa/` added MFA in sprint 8.
+- `specs/023-passkeys/` replaced part of MFA with WebAuthn in sprint 14.
+- `specs/031-session-management/` changed timeouts in sprint 19.
 
-Питання **«як у нас зараз працює auth?»** — отримує відповідь з 4 specs, частина з яких суперечить одна одній. Ніхто з них не *бреше*, але ніхто не показує **поточну реальність**.
+The question **"how does our auth currently work?"** ends up answered by 4 specs, some of which contradict each other. None of them *lies*, but none of them shows **current reality**.
 
-Це проблема, визнана у community ([Discussion #152](https://github.com/github/spec-kit/discussions/152), Jflam — один із maintainer'ів):
+This is a problem the community has acknowledged ([Discussion #152](https://github.com/github/spec-kit/discussions/152), Jflam — one of the maintainers):
 
 > «if you make a new folder/doc for every new feature… a very executional, short term mentality as opposed to having a system level design mentality.»
 
-Нижче — 5 паттернів, які реально застосовуються командами, з нейтральним розглядом плюсів і мінусів кожного. Жоден з них не є «правильним» — вибір залежить від розміру команди, рівня дисципліни, частоти змін у домені.
+Below are 5 patterns teams actually use, with a neutral look at the pros and cons of each. None of them is "the right one" — the choice depends on team size, level of discipline, and how often the domain changes.
 
 ---
 
-### Паттерн A — Atomic + Frozen
+### Pattern A — Atomic + Frozen
 
-Кожен spec — immutable після ship. Закрив, не торкаєшся. Для розуміння поточного стану — або читаєш всі relevant specs, або дивишся в код.
+Each spec is immutable after ship. Once closed, you don't touch it. To understand current state, either you read all relevant specs or you look at the code.
 
-**Механіка:**
-- `spec.md` отримує `status: implemented` після merge у main.
-- Жодних подальших правок цього файлу — навіть якщо фіча еволюціонувала.
-- Для розуміння current state читач послідовно проходить historical specs того ж домену.
+**Mechanic:**
+- `spec.md` gets `status: implemented` after merge to main.
+- No further edits to that file — even if the feature has evolved.
+- To understand current state, the reader walks the historical specs of the same domain in sequence.
 
-**Що працює (теоретично):**
-- Чітка історія: кожен spec — точний snapshot моменту прийняття рішення.
-- Жодних merge-конфліктів у specs (бо їх не редагують).
+**What works (in theory):**
+- Clear history: each spec is an exact snapshot of the moment a decision was made.
+- No merge conflicts in specs (because they aren't edited).
 
-**Що ламається (на практиці):**
-- 6 місяців на проекті 50+ specs нова людина не може зрозуміти, як що працює.
-- Питання «який поточний стан?» не має зручної відповіді.
+**What breaks (in practice):**
+- Six months into a project with 50+ specs, a new hire can't figure out how anything works.
+- The question "what's the current state?" has no convenient answer.
 
-**Плюси:**
-- Мінімальні зусилля
-- Immutable record — добре для compliance / audit
-- Жодних суперечок про «хто має оновлювати»
+**Pros:**
+- Minimal effort
+- Immutable record — good for compliance / audit
+- No arguments about "who should update this"
 
-**Мінуси:**
-- Не масштабується — на 50+ specs пошук поточної реальності стає неможливим
-- Drift не просто можливий, він **закладений** у патерн
-- Onboarding нових інженерів дорогий
+**Cons:**
+- Doesn't scale — at 50+ specs, finding current reality becomes impossible
+- Drift isn't just possible, it's **built into** the pattern
+- Onboarding for new engineers is expensive
 
 ---
 
-### Паттерн B — Supersession Chain
+### Pattern B — Supersession Chain
 
-Кожен наступний spec явно помічає предка через frontmatter. Старі автоматично отримують `superseded_by: <next-spec>`.
+Each new spec explicitly marks its predecessor via frontmatter. Old ones automatically get `superseded_by: <next-spec>`.
 
-**Механіка:**
+**Mechanic:**
 
 ```yaml
 # specs/023-passkeys/spec.md
@@ -435,75 +435,75 @@ superseded_by: 023-passkeys
 ---
 ```
 
-Скрипт показує: «для розуміння auth читай specs/023-passkeys/ як head of chain, специфічна історія — у предків».
+A script tells you: "to understand auth, read specs/023-passkeys/ as the head of the chain; the specific history lives in its predecessors."
 
-**Що працює (теоретично):**
-- Якщо нова фіча *повністю* замінює стару — chain дає чіткий шлях до current state.
-- Tooling може автоматично знаходити head of chain.
+**What works (in theory):**
+- If a new feature *fully* replaces an old one — the chain gives a clean path to current state.
+- Tooling can automatically find the head of the chain.
 
-**Що ламається (на практиці):**
-- Реальність — фічі рідко *повністю* замінюють попередні. 015-add-mfa частково живе разом із 023-passkeys (бекап для legacy users).
-- Chain-ове відношення — лінійне, реальність — графова.
-- Frontmatter `supersedes` потребує дисципліни, яка часто провисає.
+**What breaks (in practice):**
+- Reality is that features rarely *fully* replace previous ones. 015-add-mfa partially lives alongside 023-passkeys (a fallback for legacy users).
+- Chain relationships are linear; reality is a graph.
+- The `supersedes` frontmatter requires discipline that often slips.
 
-**Плюси:**
-- Зберігає історію та дозволяє reach current state
-- Automation-friendly (чіткий формат frontmatter)
+**Pros:**
+- Preserves history while letting you reach current state
+- Automation-friendly (clear frontmatter format)
 
-**Мінуси:**
-- Не охоплює часткові заміни / additive evolution
-- Дисципліна заповнення frontmatter критична
-- Складно навігувати при глибоких chain-ах (5+ versions)
+**Cons:**
+- Doesn't capture partial replacements / additive evolution
+- Frontmatter discipline is critical
+- Hard to navigate with deep chains (5+ versions)
 
 ---
 
-### Паттерн C — Living Domain Specs (всередині `specs/`)
+### Pattern C — Living Domain Specs (inside `specs/`)
 
-Окрема папка з `domain.md` для кожного bounded context, яка завжди — поточний стан. Атомарні specs для кожної зміни оновлюють domain.md як частину DoD.
+A separate `domain.md` per bounded context that always reflects current state. Atomic specs for each change update domain.md as part of DoD.
 
-**Механіка:**
+**Mechanic:**
 
 ```
 specs/
 ├── auth/
-│   ├── domain.md              ← поточний стан auth
-│   ├── 001-user-auth/         ← історичний (як стартували)
-│   ├── 015-add-mfa/           ← історичний (як додали MFA)
-│   └── 023-passkeys/          ← останній; обов'язково оновив auth/domain.md
+│   ├── domain.md              ← current state of auth
+│   ├── 001-user-auth/         ← historical (how we started)
+│   ├── 015-add-mfa/           ← historical (how we added MFA)
+│   └── 023-passkeys/          ← latest; its PR updated auth/domain.md
 └── items/
     ├── domain.md
     └── ...
 ```
 
-Розподіл: atomic specs — заморожені delta; `domain.md` — current state, оновлюється кожним delta. DoD-правило: PR не merge-ється без оновлення domain.md.
+The split: atomic specs are frozen deltas; `domain.md` is current state, updated by every delta. DoD rule: a PR doesn't merge without an update to domain.md.
 
-**Що працює (теоретично):**
-- Одна точка читання для current state у домені.
-- Локальність: усі artifact-и домену в одній папці.
+**What works (in theory):**
+- One reading point for current state in a domain.
+- Locality: all artifacts for a domain live in one folder.
 
-**Що ламається (на практиці):**
-- Архівація стає складною: при перенесенні `specs/auth/015-add-mfa/` у `_archive/` порушується domain-локальність.
-- Або не архівуєте — і `auth/` пухне до сотні папок.
-- Per-PR оновлення `domain.md` створює тертя — інженер хоче ship-нути фічу, а не редагувати huge document.
-- При паралельній роботі двох команд над auth — merge-конфлікти у `domain.md`.
+**What breaks (in practice):**
+- Archival becomes complicated: moving `specs/auth/015-add-mfa/` into `_archive/` breaks domain locality.
+- Either you don't archive — and `auth/` bloats to a hundred folders.
+- A per-PR update to `domain.md` creates friction — the engineer wants to ship a feature, not edit a huge document.
+- When two teams work on auth in parallel — merge conflicts in `domain.md`.
 
-**Плюси:**
-- Domain locality — все на одному місці
-- Single discovery path для нової людини
+**Pros:**
+- Domain locality — everything in one place
+- Single discovery path for a new hire
 
-**Мінуси:**
-- Конфлікт із archival стратегією
-- Domain-папка швидко росте
-- Per-PR DoD на оновлення domain.md — висока дисципліна
-- Ризик merge-конфліктів між фічами одного домену
+**Cons:**
+- Conflicts with the archival strategy
+- The domain folder grows quickly
+- Per-PR DoD on updating domain.md — high discipline bar
+- Risk of merge conflicts between features in the same domain
 
 ---
 
-### Паттерн D — Unified Spec (Jflam pattern)
+### Pattern D — Unified Spec (Jflam pattern)
 
-Один файл на домен `specs/auth/spec.md` живе як unified document. Усі зміни — це commits у git до того ж файлу. `## Changelog` секція внизу веде історію.
+One file per domain `specs/auth/spec.md` lives as a unified document. All changes are commits in git to the same file. A `## Changelog` section at the bottom carries the history.
 
-**Механіка:**
+**Mechanic:**
 
 ```markdown
 # Auth Spec (current)
@@ -522,34 +522,34 @@ specs/
 ### 2025-09-10 — Initial auth (v1)
 ```
 
-**Що працює (теоретично):**
-- Один файл, одне місце, мінімальна когнітивна навантага.
-- Git history природно зберігає еволюцію через `git log -p`.
+**What works (in theory):**
+- One file, one place, minimal cognitive load.
+- Git history naturally preserves evolution via `git log -p`.
 
-**Що ламається (на практиці):**
-- Ламає механіку spec-kit: `/speckit.specify` створює нову папку, не редагує існуючий файл.
-- Доводиться вручну перенаправляти роботу у існуючий файл, що створює тертя зі стандартним workflow.
-- При паралельній роботі — merge-конфлікти у єдиному файлі.
-- Файл росте необмежено — через 2 роки 100+ KB на один домен.
+**What breaks (in practice):**
+- It breaks spec-kit mechanics: `/speckit.specify` creates a new folder, it doesn't edit an existing file.
+- You end up manually redirecting work into the existing file, which creates friction with the standard workflow.
+- Parallel work — merge conflicts in a single file.
+- The file grows without bound — 100+ KB for a single domain after 2 years.
 
-**Плюси:**
-- Мінімалістична структура
-- Природна currency — current state на самому початку файлу
-- Git history несе всю еволюцію
+**Pros:**
+- Minimalist structure
+- Natural currency — current state at the very top of the file
+- Git history carries all the evolution
 
-**Мінуси:**
-- Несумісно зі стандартною механікою spec-kit
-- Потребує custom workflow або форкання шаблонів
-- Не масштабується по часу (файл росте)
-- Високий ризик merge-конфліктів
+**Cons:**
+- Incompatible with standard spec-kit mechanics
+- Requires custom workflow or forking templates
+- Doesn't scale across time (the file grows)
+- High risk of merge conflicts
 
 ---
 
-### Паттерн E — Hybrid (architecture docs + flat specs)
+### Pattern E — Hybrid (architecture docs + flat specs)
 
-Окремий файловий простір для current state (`docs/architecture/<domain>.md`) і окремий для atomic deltas (`specs/<NNN-feature>/`). Архітектурні docs — high-level (1-2 сторінки), specs — детальні delta records.
+A separate file space for current state (`docs/architecture/<domain>.md`) and a separate one for atomic deltas (`specs/<NNN-feature>/`). Architecture docs are high-level (1–2 pages); specs are detailed delta records.
 
-**Механіка:**
+**Mechanic:**
 
 ```
 docs/architecture/
@@ -566,54 +566,54 @@ specs/
 └── 048-bulk-edit/            ← active
 ```
 
-Specs мають у frontmatter `domain: auth`, що дозволяє знаходити їх по домену через скрипт. Architecture docs оновлюються або per-PR (через template modification, див. нижче), або per-quarter (на retro).
+Specs carry `domain: auth` in frontmatter, which lets you find them by domain via the script. Architecture docs are updated either per-PR (via template modification, see below) or per-quarter (at retro).
 
-**Що працює (теоретично):**
-- Два простори, дві швидкості: deltas — швидкі (atomic), architecture — повільні (high-level).
-- Specs можуть архівуватись повністю незалежно від architecture docs.
-- Architecture docs — короткі, тому drift не катастрофічний.
+**What works (in theory):**
+- Two spaces, two speeds: deltas are fast (atomic), architecture is slow (high-level).
+- Specs can be archived completely independently of architecture docs.
+- Architecture docs are short, so drift isn't catastrophic.
 
-**Що ламається (на практиці):**
-- Дві паралельні системи — ризик розходжень.
-- Без процесу sync architecture docs дрейфують.
-- Розподіл «що йде в spec, що в architecture» вимагає judgment-у.
+**What breaks (in practice):**
+- Two parallel systems — risk of divergence.
+- Without a sync process, architecture docs drift.
+- Splitting "what goes in a spec, what goes in architecture" requires judgment.
 
-**Плюси:**
-- Чиста архівація specs
-- Architecture docs короткі — легше підтримувати
-- Не ламає механіку spec-kit
-- Different update cadences можливі
+**Pros:**
+- Clean archival of specs
+- Architecture docs are short — easier to maintain
+- Doesn't break spec-kit mechanics
+- Different update cadences are possible
 
-**Мінуси:**
-- Ризик drift між двома просторами
-- Потребує процесу/ритуалу для sync
-- Розподіл відповідальності між artifact-ами не очевидний
-
----
-
-### Підсумкова таблиця паттернів
-
-| Паттерн | Currency frequency | Scaling | Conflict ризик | Сумісність зі spec-kit |
-|---------|-------------------|---------|----------------|------------------------|
-| A. Atomic + Frozen | None (за дефолтом застаріває) | Низьке | Немає | Повна |
-| B. Supersession Chain | Per-replacement | Середнє | Низький | Повна |
-| C. Living Domain Specs | Per-PR | Низьке (домен пухне) | Високий (merge у domain.md) | Повна |
-| D. Unified Spec | Per-commit | Низьке (файл росте) | Дуже високий | Часткова (потребує custom workflow) |
-| E. Hybrid (arch docs + flat specs) | Per-quarter (або per-PR) | Високе | Низький | Повна |
+**Cons:**
+- Risk of drift between the two spaces
+- Requires a process / ritual for sync
+- Splitting responsibility between artifacts isn't obvious
 
 ---
 
-## Механізми автоматизації sync
+### Pattern summary table
 
-Незалежно від обраного паттерну, можна задіяти три рівні автоматизації для зменшення дисциплінарного навантаження.
+| Pattern | Currency frequency | Scaling | Conflict risk | Spec-kit compatibility |
+|---------|-------------------|---------|---------------|------------------------|
+| A. Atomic + Frozen | None (goes stale by default) | Low | None | Full |
+| B. Supersession Chain | Per-replacement | Medium | Low | Full |
+| C. Living Domain Specs | Per-PR | Low (domain bloats) | High (merge in domain.md) | Full |
+| D. Unified Spec | Per-commit | Low (file grows) | Very high | Partial (requires custom workflow) |
+| E. Hybrid (arch docs + flat specs) | Per-quarter (or per-PR) | High | Low | Full |
 
-### Рівень 1 — Модифікація шаблону команди
+---
 
-`.specify/templates/commands/plan.md` — це звичайний markdown-промпт. Можна додати інструкції, які агент виконує при кожному `/speckit.plan`.
+## Sync automation mechanisms
 
-**Механіка:**
+Regardless of the chosen pattern, you can wire up three levels of automation to lower the discipline burden.
 
-В кінець `plan.md` додається секція:
+### Level 1 — Command template modification
+
+`.specify/templates/commands/plan.md` is just a markdown prompt. You can add instructions that the agent executes on every `/speckit.plan`.
+
+**Mechanic:**
+
+Add a section to the end of `plan.md`:
 
 ```markdown
 ### Phase 2: Architecture Doc Update Proposal
@@ -627,35 +627,35 @@ Specs мають у frontmatter `domain: auth`, що дозволяє знахо
 DO NOT modify the architecture doc directly — produce a proposal for review.
 ```
 
-При кожному `/speckit.plan` агент сам перевіряє domain, читає architecture doc, генерує review-ready proposal.
+On every `/speckit.plan`, the agent itself checks the domain, reads the architecture doc, and generates a review-ready proposal.
 
-**Що працює:**
-- Проактивне виявлення архітектурних змін під час планування.
-- Не потребує зовнішніх скриптів чи інфраструктури.
-- Працює на будь-якому агенті (Claude, Copilot, Cursor) — це звичайний markdown.
+**What works:**
+- Proactive detection of architectural changes during planning.
+- No external scripts or infrastructure required.
+- Works on any agent (Claude, Copilot, Cursor) — it's just markdown.
 
-**Що ламається:**
-- При оновленні spec-kit шаблони можуть бути перезаписані. Потрібен fork стратегія або документований патч.
-- AI proposals потребують human review — автоматичний merge створює помилки, які накопичуються.
-- Якість proposal залежить від quality зчитування існуючого architecture doc.
+**What breaks:**
+- When spec-kit is upgraded, templates can be overwritten. You need a fork strategy or a documented patch.
+- AI proposals require human review — auto-merging produces errors that accumulate.
+- The proposal quality depends on how well the existing architecture doc reads.
 
-**Плюси:**
-- Найнижчий поріг входу
-- Не вимагає extension/MCP infrastructure
-- Працює native у workflow (proposal створюється разом з planом)
+**Pros:**
+- Lowest barrier to entry
+- Doesn't require extension/MCP infrastructure
+- Works native in the workflow (proposal is created together with the plan)
 
-**Мінуси:**
-- Затирається при `specify integration upgrade`
-- Вимагає custom patch, документованого окремо
-- Тільки proposals — не виконує реальний sync
+**Cons:**
+- Gets clobbered on `specify integration upgrade`
+- Requires a custom patch, documented separately
+- Only proposals — doesn't perform the actual sync
 
 ---
 
-### Рівень 2 — Hooks через `.specify/extensions.yml`
+### Level 2 — Hooks via `.specify/extensions.yml`
 
-Hooks дозволяють виконувати shell-команди до/після команд spec-kit. Точки розширення: `before_specify`, `after_specify`, `before_plan`, `after_plan`, `before_tasks`, `after_tasks`, `before_implement`, `after_implement`.
+Hooks let you run shell commands before/after spec-kit commands. Extension points: `before_specify`, `after_specify`, `before_plan`, `after_plan`, `before_tasks`, `after_tasks`, `before_implement`, `after_implement`.
 
-**Механіка:**
+**Mechanic:**
 
 ```yaml
 hooks:
@@ -668,36 +668,36 @@ hooks:
       description: "Append shipped feature to architecture doc changelog"
 ```
 
-Скрипт читає frontmatter активної спеки, визначає домен, додає одну строчку в `## Recent changes` секцію відповідного `architecture/<domain>.md`.
+The script reads the active spec's frontmatter, identifies the domain, and appends a single line to the `## Recent changes` section of the corresponding `architecture/<domain>.md`.
 
-**Що працює:**
-- Mechanical updates (append рядка у changelog) — надійно.
-- Тригер на `after_implement` гарантує, що update відбувається тільки після успішної імплементації.
+**What works:**
+- Mechanical updates (appending a line to a changelog) are reliable.
+- Triggering on `after_implement` ensures the update happens only after a successful implementation.
 
-**Що ламається:**
-- Sed-based текстові маніпуляції з markdown крихкі — найменша зміна структури документа ламає скрипт.
-- Hooks не призначені для AI-invocations напряму. Для генерації prose потрібен Рівень 1 або 3.
-- Optional / required параметри hook-ів не завжди respected — залежить від host-агента.
+**What breaks:**
+- Sed-based text manipulation of markdown is brittle — the smallest structural change breaks the script.
+- Hooks aren't designed for AI invocations directly. To generate prose you need Level 1 or Level 3.
+- `optional` / `required` parameters on hooks aren't always respected — depends on the host agent.
 
-**Плюси:**
-- Автоматична фіксація fact-of-shipping
-- Працює без AI на цьому етапі (детерміновано)
-- Інтегрується в native lifecycle команд spec-kit
+**Pros:**
+- Automatic recording of fact-of-shipping
+- Works without AI at this stage (deterministic)
+- Integrates into the native lifecycle of spec-kit commands
 
-**Мінуси:**
-- Лише mechanical updates (не prose)
-- Крихкість sed/awk-маніпуляцій
-- Hooks механізм у spec-kit поки early-stage
+**Cons:**
+- Mechanical updates only (not prose)
+- Brittleness of sed/awk manipulation
+- The hooks mechanism in spec-kit is still early-stage
 
 ---
 
-### Рівень 3 — Кастомний slash-command
+### Level 3 — Custom slash command
 
-Можна додати власну команду через створення нового шаблону у `.specify/templates/commands/<name>.md`. Команда викликається явно, не автоматично.
+You can add your own command by creating a new template under `.specify/templates/commands/<name>.md`. The command is invoked explicitly, not automatically.
 
-**Механіка:**
+**Mechanic:**
 
-`.specify/templates/commands/archupdate.md` із інструкціями:
+`.specify/templates/commands/archupdate.md` with instructions:
 
 ```markdown
 ---
@@ -712,79 +712,79 @@ description: Propose updates to architecture docs based on recently shipped spec
 DO NOT modify docs/architecture/<domain>.md directly.
 ```
 
-Раз на квартал (на ретро) запускається `/speckit.archupdate` — агент сам сходить, прочитає всі shipped specs за період, порівняє з architecture docs, згенерує proposals.
+Once a quarter (at retro), you run `/speckit.archupdate` — the agent itself walks all shipped specs over the period, compares them against architecture docs, and generates proposals.
 
-**Що працює:**
-- Batch-ретроспективна перевірка currency.
-- Виявляє drift, який не було помічено per-PR.
-- Чіткий ритуал, прив'язаний до квартального циклу.
+**What works:**
+- Batch retrospective currency check.
+- Surfaces drift that wasn't caught per-PR.
+- A clear ritual tied to the quarterly cycle.
 
-**Що ламається:**
-- Залежить від human trigger — якщо retro пропустили, sync не відбувся.
-- Якість аналізу залежить від context-розміру агента (для great кількості specs може втратити деталі).
-- Proposals все одно потребують human review.
+**What breaks:**
+- Depends on a human trigger — if you skip retro, the sync doesn't happen.
+- Analysis quality depends on the agent's context size (with a large number of specs, it can lose detail).
+- Proposals still require human review.
 
-**Плюси:**
-- Працює як ритуал — explicit moment of sync
-- Може охопити те, що не покрив Рівень 1 (cross-feature drift)
-- AI-power для семантичного аналізу
+**Pros:**
+- Works as a ritual — an explicit moment of sync
+- Can catch what Level 1 misses (cross-feature drift)
+- AI horsepower for semantic analysis
 
-**Мінуси:**
-- Manual trigger — risk пропуску
-- Великий context — ризик низької якості proposals
-- Тільки proposals, не auto-merge
-
----
-
-### Підсумкова таблиця механізмів автоматизації
-
-| Рівень | Тригер | Тип update | Інфраструктура | AI-залежність |
-|--------|--------|-----------|----------------|---------------|
-| 1. Template mod | Per-`/plan` | Proposal (prose) | Markdown patch | Висока |
-| 2. Hooks | Per-`/implement` (etc) | Mechanical (changelog) | extensions.yml + скрипт | Низька |
-| 3. Custom command | Manual (e.g. quarterly) | Proposal (prose, batch) | Шаблон команди | Висока |
+**Cons:**
+- Manual trigger — risk of being skipped
+- Large context — risk of low-quality proposals
+- Proposals only, no auto-merge
 
 ---
 
-### Сумісність паттернів і механізмів
+### Automation mechanism summary table
 
-Не всі комбінації паттернів і механізмів мають сенс:
-
-| | Рівень 1 (template mod) | Рівень 2 (hooks) | Рівень 3 (custom command) |
-|---|------------------------|------------------|---------------------------|
-| **A. Atomic + Frozen** | N/A (нема currency artifact) | N/A | N/A |
-| **B. Supersession Chain** | Auto-update frontmatter | Можливо | Можливо |
-| **C. Living Domain Specs** | Update domain.md proposal | Append changelog у domain.md | Quarterly review domain.md |
-| **D. Unified Spec** | Append section у unified | Append changelog | Quarterly cleanup |
-| **E. Hybrid (arch docs)** | Update arch doc proposal | Append changelog у arch doc | Quarterly arch review |
-
-Паттерн A не вимагає sync механізмів за визначенням. Решта — отримують вигоду з рівнів 1-3 у різних комбінаціях.
+| Level | Trigger | Update type | Infrastructure | AI dependency |
+|-------|---------|-------------|----------------|---------------|
+| 1. Template mod | Per-`/plan` | Proposal (prose) | Markdown patch | High |
+| 2. Hooks | Per-`/implement` (etc.) | Mechanical (changelog) | extensions.yml + script | Low |
+| 3. Custom command | Manual (e.g. quarterly) | Proposal (prose, batch) | Command template | High |
 
 ---
 
-## Чек-лист на масштабі
+### Compatibility of patterns and mechanisms
 
-Якщо ваш проект перетинає поріг 50–80 specs:
+Not every pattern × mechanism combination makes sense:
 
-- [ ] Усі spec.md мають frontmatter з `status` полем
-- [ ] Створено `_archive/` директорію
-- [ ] Перенесено specs зі статусом `implemented` старше 90 днів
-- [ ] Видалено `dropped` specs (через git rm)
-- [ ] Створено `specs/README.md` як auto-generated index
-- [ ] Створено `scripts/specs.py` для пошуку/фільтрації
-- [ ] Налаштовано quarterly grooming ritual на retro
-- [ ] Додано принцип Specs Hygiene у constitution.md
-- [ ] Якщо домени вже видно — створено `specs/<domain>/` структуру
-- [ ] Pre-commit hook валідує frontmatter
-- [ ] Команда обрала і задокументувала свій паттерн currency (A/B/C/D/E)
-- [ ] Якщо паттерн A не обрано — налаштовано хоча б один механізм sync (Рівень 1/2/3)
+| | Level 1 (template mod) | Level 2 (hooks) | Level 3 (custom command) |
+|---|------------------------|-----------------|--------------------------|
+| **A. Atomic + Frozen** | N/A (no currency artifact) | N/A | N/A |
+| **B. Supersession Chain** | Auto-update frontmatter | Possible | Possible |
+| **C. Living Domain Specs** | Update domain.md proposal | Append changelog to domain.md | Quarterly review of domain.md |
+| **D. Unified Spec** | Append section to unified | Append changelog | Quarterly cleanup |
+| **E. Hybrid (arch docs)** | Update arch doc proposal | Append changelog to arch doc | Quarterly arch review |
+
+Pattern A doesn't need sync mechanisms by definition. The rest benefit from Levels 1–3 in various combinations.
 
 ---
 
-## Що читати далі
+## At-scale checklist
 
-- **`SCRUM_INTEGRATION.md`** — як specs hygiene інтегрується з Scrum-ритмом (quarterly grooming = частина retro).
-- **`CONSTITUTION_GUIDE.md`** — як додати Specs Hygiene принцип у конституцію.
-- **`SPEC-KIT-docs.md`** — секція 8.5 Project Memory.
+If your project crosses the 50–80 specs threshold:
 
-> 🚀 **Ключова порада**: не чекайте, поки `specs/` стане смітником. Заведіть hygiene-практику з 50-ї спеки, не з 250-ї. Перенести 5 specs у `_archive/` — 2 хвилини; перенести 200 — півдня.
+- [ ] Every spec.md has frontmatter with a `status` field
+- [ ] An `_archive/` directory has been created
+- [ ] Specs with status `implemented` older than 90 days have been moved
+- [ ] `dropped` specs have been deleted (via git rm)
+- [ ] `specs/README.md` is set up as an auto-generated index
+- [ ] `scripts/specs.py` exists for search/filtering
+- [ ] A quarterly grooming ritual is scheduled at retro
+- [ ] The Specs Hygiene principle has been added to constitution.md
+- [ ] If domains are already visible — `specs/<domain>/` structure has been created
+- [ ] A pre-commit hook validates frontmatter
+- [ ] The team has chosen and documented its currency pattern (A/B/C/D/E)
+- [ ] If pattern A wasn't chosen — at least one sync mechanism is in place (Level 1/2/3)
+
+---
+
+## What to read next
+
+- **`SCRUM_INTEGRATION.md`** — how specs hygiene integrates with the Scrum cadence (quarterly grooming = part of retro).
+- **`CONSTITUTION_GUIDE.md`** — how to add the Specs Hygiene principle to the constitution.
+- **`SPEC-KIT-docs.md`** — section 8.5 Project Memory.
+
+> 🚀 **Key tip**: don't wait until `specs/` becomes a junk drawer. Start the hygiene practice at spec #50, not at #250. Moving 5 specs into `_archive/` takes 2 minutes; moving 200 takes half a day.

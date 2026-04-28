@@ -1,57 +1,57 @@
-# PROJECT_SETUP — Розгортання тренувального проекту
+# PROJECT_SETUP — Standing up the training project
 
-> Цей файл написано як **агентський промпт**. Ви можете або виконувати кроки вручну, або повністю передати цей файл AI-агенту в окремому чаті, попросивши його виконати все автономно.
-
----
-
-## Інструкції для агента
-
-Ти — автономний setup-агент. Твоя ціль — склонувати, налаштувати і запустити проект `fastapi/full-stack-fastapi-template` через Docker Compose. Виконуй кожен крок по порядку. Не пропускай кроків. Після кожного кроку — переконайся, що він пройшов успішно, перш ніж рухатись далі.
-
-Якщо щось пішло не так — **не імпровізуй**. Зупинись, виведи повний текст помилки і запитай, що робити.
-
-Після завершення — повідом результат у форматі checklist (всі ✅ або вкажи, що зламалось).
+> This file is written as an **agent prompt**. You can either follow the steps manually or hand the whole file off to an AI agent in a separate chat and have it run everything autonomously.
 
 ---
 
-## Передумови (перевір перед початком)
+## Instructions for the agent
+
+You are an autonomous setup agent. Your goal is to clone, configure, and start the `fastapi/full-stack-fastapi-template` project via Docker Compose. Run each step in order. Don't skip steps. After each step, confirm it succeeded before moving on.
+
+If something goes wrong, **don't improvise**. Stop, print the full error, and ask what to do next.
+
+When finished, report the result as a checklist (all ✅, or note what broke).
+
+---
+
+## Prerequisites (verify before starting)
 
 ```bash
-# Перевір, що всі ці команди доступні:
+# Verify all of these commands are available:
 git --version          # >= 2.30
 docker --version       # >= 24.0
 docker compose version # >= v2.20
-node --version         # >= 18 (опційно — для локального dev frontend)
-python3 --version      # >= 3.10 (опційно — для локального dev backend)
+node --version         # >= 18 (optional — for local dev frontend)
+python3 --version      # >= 3.10 (optional — for local dev backend)
 ```
 
-> ⚠️ Якщо чогось не вистачає — STOP. Запитай, чи встановлювати самому, чи це повинен зробити користувач.
+> ⚠️ If anything is missing — STOP. Ask whether to install it yourself or have the user do it.
 
 ---
 
-## Крок 1 — Клонування проекту
+## Step 1 — Clone the project
 
 ```bash
-cd ~/projects   # або інша папка для проектів
+cd ~/projects   # or another folder for projects
 git clone https://github.com/fastapi/full-stack-fastapi-template.git
 cd full-stack-fastapi-template
 ```
 
-**Перевірка:**
-- Команда `ls` показує `backend/`, `frontend/`, `docker-compose.yml`, `.env.example`.
+**Check:**
+- `ls` shows `backend/`, `frontend/`, `docker-compose.yml`, `.env.example`.
 
 ---
 
-## Крок 2 — Налаштування environment
+## Step 2 — Configure the environment
 
 ```bash
 cp .env.example .env
 ```
 
-Відкрий `.env` і **обовʼязково** заміни ці значення (інакше Docker не запуститься з production-захистами):
+Open `.env` and **make sure** to replace these values (otherwise Docker won't start due to production safeguards):
 
 ```env
-# Безпечні дефолти для локального dev:
+# Safe defaults for local dev:
 SECRET_KEY=dev-secret-change-me-in-production
 FIRST_SUPERUSER_PASSWORD=changethis
 POSTGRES_PASSWORD=changethis
@@ -59,58 +59,58 @@ SMTP_PASSWORD=
 PROJECT_NAME=Spec-Kit Training Project
 ```
 
-> 💡 **Практичне правило**: ніколи не комітити `.env`. Він вже в `.gitignore`.
+> 💡 **Practical rule**: never commit `.env`. It's already in `.gitignore`.
 
-**Перевірка:**
+**Check:**
 ```bash
 grep -E "^SECRET_KEY|^FIRST_SUPERUSER" .env
 ```
-Має показати щось крім `changethis-please-replace-with-something-random`.
+Should show something other than `changethis-please-replace-with-something-random`.
 
 ---
 
-## Крок 3 — Перший запуск через Docker Compose
+## Step 3 — First run via Docker Compose
 
 ```bash
 docker compose up -d --build
 ```
 
-Перший білд — 5–15 хвилин (тягне Python, Node, Postgres-образи + збирає frontend).
+The first build takes 5–15 minutes (pulling Python, Node, Postgres images plus building the frontend).
 
-**Перевірка:**
+**Check:**
 ```bash
 docker compose ps
 ```
 
-Усі сервіси мають бути в статусі `running` (або `healthy`):
+All services should be in `running` (or `healthy`) state:
 - `db` — PostgreSQL
 - `backend` — FastAPI
 - `frontend` — React + Nginx
 - `proxy` — Traefik
-- `mailcatcher` — для тестових email
-- `adminer` — UI для бази (опційно)
+- `mailcatcher` — for test email
+- `adminer` — DB UI (optional)
 
-Якщо якийсь падає — `docker compose logs <service>` → STOP, запитай.
+If anything is failing — `docker compose logs <service>` → STOP, ask.
 
 ---
 
-## Крок 4 — Прогон міграцій і створення superuser
+## Step 4 — Run migrations and create the superuser
 
-Міграції зазвичай прогоняються автоматично у `backend` контейнері при старті. Перевір:
+Migrations usually run automatically in the `backend` container at startup. Verify:
 
 ```bash
 docker compose logs backend | grep -i "migration\|alembic"
 ```
 
-Якщо міграції не пройшли — запусти вручну:
+If migrations didn't apply, run them manually:
 
 ```bash
 docker compose exec backend alembic upgrade head
 ```
 
-Superuser створюється автоматично з `.env` (поля `FIRST_SUPERUSER` і `FIRST_SUPERUSER_PASSWORD`).
+The superuser is created automatically from `.env` (the `FIRST_SUPERUSER` and `FIRST_SUPERUSER_PASSWORD` fields).
 
-**Перевірка через cURL:**
+**Check via cURL:**
 
 ```bash
 curl -X POST http://localhost:8000/api/v1/login/access-token \
@@ -118,67 +118,67 @@ curl -X POST http://localhost:8000/api/v1/login/access-token \
   -d "username=admin@example.com&password=changethis"
 ```
 
-Має повернути JSON з `access_token`. Якщо повертає 401 — superuser не створився, перевір логи.
+It should return JSON with an `access_token`. If you get a 401, the superuser wasn't created — check the logs.
 
 ---
 
-## Крок 5 — Перевірка UI
+## Step 5 — Verify the UI
 
-Відкрий по черзі:
+Open in turn:
 
-- ✅ http://localhost:5173 — фронтенд (логін формою)
+- ✅ http://localhost:5173 — frontend (login form)
 - ✅ http://localhost:8000/docs — Swagger UI
 - ✅ http://localhost:8000/redoc — ReDoc
-- ✅ http://localhost:8080 — Adminer (якщо у compose)
+- ✅ http://localhost:8080 — Adminer (if it's in compose)
 - ✅ http://localhost:1080 — Mailcatcher
 
-Логін на фронтенді: `admin@example.com` / `changethis`.
+Frontend login: `admin@example.com` / `changethis`.
 
-**Перевірка повного циклу:**
-1. Залогінитись.
-2. Створити item з title `Hello SDD`.
-3. Побачити його в списку.
-4. Видалити.
+**Full-cycle check:**
+1. Log in.
+2. Create an item with the title `Hello SDD`.
+3. See it in the list.
+4. Delete it.
 
 ---
 
-## Крок 6 — Встановити spec-kit у проект
+## Step 6 — Install spec-kit into the project
 
-> 💡 **Це робить spec-kit активним для AI-агента (Claude Code / Copilot / Cursor) у цьому репозиторії.**
+> 💡 **This activates spec-kit for the AI agent (Claude Code / Copilot / Cursor) in this repository.**
 
 ```bash
-# Якщо uv ще не встановлено:
-pip install uv  # або brew install uv
+# If uv isn't installed yet:
+pip install uv  # or brew install uv
 
-# Ініціалізація spec-kit у поточній папці:
+# Initialize spec-kit in the current folder:
 cd full-stack-fastapi-template
 uvx --from git+https://github.com/github/spec-kit.git specify init . --integration claude
 ```
 
-Заміни `claude` на свого агента: `copilot`, `cursor-agent`, `gemini`, `codex` тощо. Список — `specify integration list`.
+Replace `claude` with your agent: `copilot`, `cursor-agent`, `gemini`, `codex`, etc. Run `specify integration list` for the list.
 
-**Перевірка:**
+**Check:**
 
 ```bash
 ls -la .specify/
 ls -la .specify/templates/
 ls -la .specify/memory/
-cat CLAUDE.md  # або GEMINI.md, AGENTS.md залежно від агента
+cat CLAUDE.md  # or GEMINI.md, AGENTS.md depending on the agent
 ```
 
-Має зʼявитись:
-- `.specify/memory/constitution.md` (порожній шаблон)
+You should see:
+- `.specify/memory/constitution.md` (empty template)
 - `.specify/templates/spec-template.md`, `plan-template.md`, `tasks-template.md`
-- `.specify/scripts/bash/` і `powershell/`
-- Файл-контекст агента (`CLAUDE.md`, `AGENTS.md`, `.github/copilot-instructions.md`...)
+- `.specify/scripts/bash/` and `powershell/`
+- An agent context file (`CLAUDE.md`, `AGENTS.md`, `.github/copilot-instructions.md`, etc.)
 
-> ⚠️ Spec-kit НЕ конфліктує з існуючим `git`. Ініціалізація просто додає файли — не чіпає існуючий код.
+> ⚠️ Spec-kit does NOT conflict with existing `git`. Initialization just adds files — it doesn't touch existing code.
 
 ---
 
-## Крок 7 — Перевірка slash-команд у редакторі
+## Step 7 — Verify slash commands in the editor
 
-Відкрий проект у твоєму AI-редакторі (Claude Code / Copilot / Cursor). У чаті почни друкувати `/speckit.` — має зʼявитись автокомпліт зі списку:
+Open the project in your AI editor (Claude Code / Copilot / Cursor). In the chat, start typing `/speckit.` — the autocomplete should show:
 
 - `/speckit.constitution`
 - `/speckit.specify`
@@ -190,37 +190,37 @@ cat CLAUDE.md  # або GEMINI.md, AGENTS.md залежно від агента
 - `/speckit.checklist`
 - `/speckit.taskstoissues`
 
-> 💡 У **Codex CLI skills mode** префікс інший: `$speckit-*` замість `/speckit.*`.
+> 💡 In **Codex CLI skills mode** the prefix is different: `$speckit-*` instead of `/speckit.*`.
 
-**Якщо команд немає** — STOP. Запитай. Найімовірніша причина: вибрано не той агент при `specify init`.
-
----
-
-## Звіт про готовність
-
-Заповни цей checklist:
-
-- [ ] Git клон зроблено
-- [ ] `.env` налаштовано
-- [ ] `docker compose up -d` без помилок
-- [ ] Усі контейнери в `running`/`healthy`
-- [ ] Міграції пройшли
-- [ ] Логін через cURL повертає `access_token`
-- [ ] Фронтенд відкривається на http://localhost:5173
-- [ ] Swagger відкривається на http://localhost:8000/docs
-- [ ] Створено тестовий item через UI
-- [ ] `specify init . --integration <agent>` пройшло
-- [ ] `.specify/` директорія створена
-- [ ] У редакторі автокомпліт показує `/speckit.*` команди
-
-Якщо все ✅ — напиши коротке: **«Готово, проект і spec-kit працюють. Можна переходити до Стадії 2.»**
+**If the commands aren't there** — STOP. Ask. The most likely cause: the wrong agent was selected during `specify init`.
 
 ---
 
-## Cleanup (коли курс завершено)
+## Readiness report
+
+Fill in this checklist:
+
+- [ ] Git clone done
+- [ ] `.env` configured
+- [ ] `docker compose up -d` ran without errors
+- [ ] All containers `running`/`healthy`
+- [ ] Migrations applied
+- [ ] cURL login returns an `access_token`
+- [ ] Frontend loads at http://localhost:5173
+- [ ] Swagger loads at http://localhost:8000/docs
+- [ ] Created a test item via the UI
+- [ ] `specify init . --integration <agent>` succeeded
+- [ ] `.specify/` directory created
+- [ ] Editor autocomplete shows `/speckit.*` commands
+
+If everything is ✅ — write a short message: **"Done, the project and spec-kit are working. Ready to move to Stage 2."**
+
+---
+
+## Cleanup (when the course is finished)
 
 ```bash
-docker compose down -v  # -v видалить volumes (база)
+docker compose down -v  # -v removes volumes (the database)
 cd ..
 rm -rf full-stack-fastapi-template
 ```

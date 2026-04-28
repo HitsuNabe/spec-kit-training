@@ -1,12 +1,12 @@
-# TASKS_JIRA — Детальний бекенд у форматі Jira
+# TASKS_JIRA — Detailed Backend in Jira Format
 
-> Ті самі 7 задач, що й у `TASKS.md`, але у форматі Jira-сторі: Acceptance Criteria (Gherkin), Subtasks з checkboxes, Story Points, Labels, Technical Notes.
+> The same 7 tasks as in `TASKS.md`, but in Jira-story format: Acceptance Criteria (Gherkin), Subtasks with checkboxes, Story Points, Labels, Technical Notes.
 
-Цей формат — підкерівні документи, які можна копіювати у Jira/Linear. Acceptance Criteria — це готові тест-сценарії; subtasks мапляться на checklist-и в `tasks.md`.
+This format produces drop-in documents you can paste into Jira/Linear. Acceptance Criteria are ready-to-use test scenarios; subtasks map to the checklists in `tasks.md`.
 
 ---
 
-## SDD-1 — Tags для items (M2M)
+## SDD-1 — Tags for items (M2M)
 
 **Type**: Story · **SP**: 5 · **Priority**: Medium · **Labels**: `backend`, `frontend`, `db-migration`, `feature`
 
@@ -118,13 +118,13 @@ THEN an empty state "No items match 'xyz'" is shown with a Clear button
 
 ### Technical Notes
 
-- ILIKE without index acceptable for ≤10K rows (Constitution Performance принцип задокументовано в Complexity Tracking).
+- ILIKE without an index is acceptable for ≤10K rows (Constitution Performance principle is documented in Complexity Tracking).
 - Future: `pg_trgm` GIN index in v2 (out of scope here).
 - Counter must show "Found N item" (singular) when N=1.
 
 ---
 
-## SDD-3 — Comments з permissions
+## SDD-3 — Comments with permissions
 
 **Type**: Story · **SP**: 8 · **Priority**: High · **Labels**: `backend`, `frontend`, `db-migration`, `auth`, `feature`
 
@@ -189,7 +189,7 @@ THEN the comment is removed and an error toast appears
 
 ---
 
-## SDD-4 — Dashboard з recharts
+## SDD-4 — Dashboard with recharts
 
 **Type**: Story · **SP**: 8 · **Priority**: Medium · **Labels**: `backend`, `frontend`, `feature`, `superuser-only`
 
@@ -246,13 +246,13 @@ AND URL updates to ?range=7d
 
 ---
 
-## SDD-5 — Favorites з optimistic UI
+## SDD-5 — Favorites with optimistic UI
 
 **Type**: Story · **SP**: 5 · **Priority**: Medium · **Labels**: `backend`, `frontend`, `db-migration`, `feature`
 
 ### Description
 
-User can star items as favorites. Toggle is optimistic — UI updates immediately, syncs with server. Sidebar shows "My Favorites" filter.
+User can star items as favorites. Toggle is optimistic — the UI updates immediately, then syncs with the server. Sidebar shows a "My Favorites" filter.
 
 ### Acceptance Criteria
 
@@ -304,13 +304,13 @@ THEN the icon flips back AND a toast "Could not save favorite" appears
 
 ---
 
-## SDD-6 — CSV Export через StreamingResponse
+## SDD-6 — CSV Export via StreamingResponse
 
 **Type**: Story · **SP**: 5 · **Priority**: Medium · **Labels**: `backend`, `frontend`, `feature`, `performance`
 
 ### Description
 
-User can export the current items list to CSV. Backend streams large datasets without loading into memory. Filters from the list (`q`, `tag`, `favorite`) are preserved.
+User can export the current items list to CSV. Backend streams large datasets without loading them into memory. Filters from the list (`q`, `tag`, `favorite`) are preserved.
 
 ### Acceptance Criteria
 
@@ -348,10 +348,10 @@ AND tags are comma-separated within the cell, properly escaped
 
 ### Technical Notes
 
-- StreamingResponse чат: `media_type="text/csv"`, content via async generator.
+- StreamingResponse: `media_type="text/csv"`, content via async generator.
 - Use `csv.writer` with `io.StringIO()` per chunk to handle escaping.
 - Filename uses UTC date.
-- For datasets > 100K rows, recommend background job + email — out of scope.
+- For datasets > 100K rows, recommend a background job + email — out of scope.
 
 ---
 
@@ -361,7 +361,7 @@ AND tags are comma-separated within the cell, properly escaped
 
 ### Description
 
-Every mutating operation (POST/PUT/PATCH/DELETE on `/api/v1/items`, `/comments`, `/tags`, `/favorites`) is logged with actor, action, resource, payload diff. Admin page surfaces logs with filters and detail diff modal.
+Every mutating operation (POST/PUT/PATCH/DELETE on `/api/v1/items`, `/comments`, `/tags`, `/favorites`) is logged with actor, action, resource, payload diff. An admin page surfaces logs with filters and a detail diff modal.
 
 ### Acceptance Criteria
 
@@ -419,12 +419,12 @@ THEN the query plan uses partition pruning (verified by EXPLAIN ANALYZE)
 
 - Diff library: implement custom (200 LoC) or use `dictdiffer`. Watch out for large blobs (truncate fields > 10KB).
 - `BackgroundTasks` for async writes — but for high-throughput environments consider a queue (Redis Streams, NATS) — out of scope for MVP.
-- Partitioning rationale: 1M+ rows per month possible in real systems; partition pruning saves > 90% scan time.
-- Compliance angle (if relevant to your org): retention policy (e.g., 12 months) — add as separate sub-feature.
+- Partitioning rationale: 1M+ rows per month is plausible in real systems; partition pruning saves > 90% scan time.
+- Compliance angle (if relevant to your org): retention policy (e.g., 12 months) — add as a separate sub-feature.
 
 ### Constitution Check
 
-This feature touches Observability и Performance principles. Document in `plan.md`:
+This feature touches the Observability and Performance principles. Document in `plan.md`:
 
 - ✅ Observability: structured log per audit write attempt
 - ⚠️ Performance: synchronous diff computation may add 5–20ms per request — measure in load test
@@ -432,12 +432,12 @@ This feature touches Observability и Performance principles. Document in `plan.
 
 ---
 
-## Підсумок
+## Summary
 
-Усі задачі написані з врахуванням:
-- ✅ Готових Acceptance Criteria у форматі Gherkin (= тест-сценарії)
-- ✅ Subtask checklist'ів, які мапляться на `tasks.md` (фази Setup/Foundational/US/Polish)
-- ✅ Technical Notes з нюансами реалізації
-- ✅ Constitution touchpoints — де треба обґрунтовувати compliance
+All tasks are written to deliver:
+- ✅ Ready-made Acceptance Criteria in Gherkin format (= test scenarios)
+- ✅ Subtask checklists that map to `tasks.md` (Setup/Foundational/US/Polish phases)
+- ✅ Technical Notes with implementation nuances
+- ✅ Constitution touchpoints — where compliance must be justified
 
-**Наступний крок**: оберіть **SDD-2** і пройдіть її повністю по `SPEC_KIT_WORKFLOW_GUIDE.md`. Після цього переходьте до решти.
+**Next step**: pick **SDD-2** and run it end-to-end through `SPEC_KIT_WORKFLOW_GUIDE.md`. After that, work through the rest.

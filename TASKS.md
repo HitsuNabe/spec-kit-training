@@ -1,158 +1,158 @@
-# TASKS — Практичний бекенд
+# TASKS — Hands-on backlog
 
-> 7 задач на тренувальному проекті `fastapi/full-stack-fastapi-template`. Виконуйте через повний spec-kit workflow (Сценарій 2 з `SPEC_KIT_USE_CASES.md`). Деталі у форматі Jira — у `TASKS_JIRA.md`.
+> 7 tasks on the training project `fastapi/full-stack-fastapi-template`. Run each one through the full spec-kit workflow (Scenario 2 in `SPEC_KIT_USE_CASES.md`). Jira-format details live in `TASKS_JIRA.md`.
 
 ---
 
-## SDD-1 — Tags для items (M2M)
+## SDD-1 — Tags for items (M2M)
 
-**Складність**: Easy · **Story Points**: 5
+**Difficulty**: Easy · **Story Points**: 5
 
-Користувач може створювати теги (per-user) і призначати кілька тегів одному item. У списку items видно теги; можна фільтрувати list по тегу.
+A user can create tags (per-user) and assign multiple tags to a single item. Tags appear in the items list; the list can be filtered by tag.
 
 **Backend:**
-- Модель `Tag` (id UUID, name str unique, owner_id FK)
+- `Tag` model (id UUID, name str unique, owner_id FK)
 - Linked table `ItemTag` (item_id FK, tag_id FK)
 - Alembic migration
 - CRUD endpoints `/api/v1/tags`
-- Patch endpoint `/api/v1/items/{id}` приймає `tag_ids: list[UUID]`
-- Filter `?tag=<name>` у `GET /api/v1/items`
+- Patch endpoint `/api/v1/items/{id}` accepts `tag_ids: list[UUID]`
+- Filter `?tag=<name>` on `GET /api/v1/items`
 
 **Frontend:**
-- `TagBadge` компонент (кольоровий бейдж)
-- `TagSelector` (multiselect з autocomplete)
-- Інтеграція в Item create/edit form
-- Фільтрація списку items по кліку на тег
+- `TagBadge` component (colored badge)
+- `TagSelector` (multiselect with autocomplete)
+- Integration into the Item create/edit form
+- Filter the items list by clicking a tag
 
 ---
 
 ## SDD-2 — Search & Filter
 
-**Складність**: Easy · **Story Points**: 3
+**Difficulty**: Easy · **Story Points**: 3
 
-Реалізовано в `SPEC_KIT_WORKFLOW_GUIDE.md` як reference.
+Walked through in `SPEC_KIT_WORKFLOW_GUIDE.md` as the reference example.
 
 **Backend:**
-- Параметр `q: Optional[str]` у `GET /api/v1/items`
-- ILIKE substring match на `title`
+- `q: Optional[str]` parameter on `GET /api/v1/items`
+- ILIKE substring match on `title`
 - Escape special chars (`%`, `_`, `\`)
 
 **Frontend:**
-- `SearchBar` компонент з clear button + Esc
+- `SearchBar` component with a clear button + Esc
 - `useDebouncedValue` hook (300ms)
-- URL state через `useSearchParams` (`?q=...`)
+- URL state via `useSearchParams` (`?q=...`)
 - Empty state component
 
 ---
 
-## SDD-3 — Comments з permissions
+## SDD-3 — Comments with permissions
 
-**Складність**: Medium · **Story Points**: 8
+**Difficulty**: Medium · **Story Points**: 8
 
-Authenticated users можуть лишати коментарі під items. Власник item може видаляти будь-які; інші — тільки свої.
+Authenticated users can leave comments under items. The item owner can delete any comment; everyone else can delete only their own.
 
 **Backend:**
-- Модель `Comment` (id, item_id FK, author_id FK, body, created_at)
+- `Comment` model (id, item_id FK, author_id FK, body, created_at)
 - Alembic migration
 - CRUD endpoints `/api/v1/items/{id}/comments`
-- Permission check: `is_owner_of_item OR is_author_of_comment` для DELETE
-- Pagination + сортування за `created_at DESC`
+- Permission check on DELETE: `is_owner_of_item OR is_author_of_comment`
+- Pagination + sort by `created_at DESC`
 
 **Frontend:**
 - `CommentList` (paginated, infinite scroll)
 - `CommentForm` (markdown preview)
-- Кнопка Delete тільки для дозволених коментарів
-- Optimistic update при додаванні
+- Delete button visible only on permitted comments
+- Optimistic update on add
 
 ---
 
-## SDD-4 — Dashboard з recharts
+## SDD-4 — Dashboard with recharts
 
-**Складність**: Medium · **Story Points**: 8
+**Difficulty**: Medium · **Story Points**: 8
 
-Dashboard-сторінка з агрегаціями: items per week (line chart), items per tag (bar chart), top contributors (pie chart).
+A dashboard page with aggregations: items per week (line chart), items per tag (bar chart), top contributors (pie chart).
 
 **Backend:**
-- Endpoint `GET /api/v1/dashboard/summary` з 3 секціями
-- SQL агрегації (GROUP BY week, GROUP BY tag, GROUP BY owner)
-- Кешування 5 хвилин (in-memory або Redis)
-- Permission: тільки superuser
+- `GET /api/v1/dashboard/summary` endpoint with 3 sections
+- SQL aggregations (GROUP BY week, GROUP BY tag, GROUP BY owner)
+- 5-minute cache (in-memory or Redis)
+- Permission: superuser only
 
 **Frontend:**
-- Сторінка `/dashboard`
-- 3 chart-компоненти на `recharts`
+- `/dashboard` page
+- 3 chart components on `recharts`
 - Loading/error states
 - Date range picker (last 7/30/90 days)
 
 ---
 
-## SDD-5 — Favorites з optimistic UI
+## SDD-5 — Favorites with optimistic UI
 
-**Складність**: Easy · **Story Points**: 5
+**Difficulty**: Easy · **Story Points**: 5
 
-Користувач може зірочкою позначати items як favorite. Toggle мгновений (optimistic), синхронізується з backend.
+Users can star items as favorites. The toggle is instant (optimistic) and syncs to the backend.
 
 **Backend:**
-- Модель `Favorite` (user_id, item_id, created_at) — composite PK
+- `Favorite` model (user_id, item_id, created_at) — composite PK
 - Alembic migration
 - Endpoints `POST /api/v1/items/{id}/favorite`, `DELETE` (idempotent)
-- Поле `is_favorite` у відповіді `GET /api/v1/items/{id}` (computed)
-- Filter `?favorite=true` у list endpoint
+- `is_favorite` field in the response of `GET /api/v1/items/{id}` (computed)
+- Filter `?favorite=true` on the list endpoint
 
 **Frontend:**
-- StarIcon з 2 станами
-- Optimistic update в TanStack Query (через `onMutate`)
-- Rollback при failure
+- StarIcon with 2 states
+- Optimistic update in TanStack Query (via `onMutate`)
+- Rollback on failure
 - Sidebar tab "My Favorites"
 
 ---
 
-## SDD-6 — CSV Export через StreamingResponse
+## SDD-6 — CSV Export via StreamingResponse
 
-**Складність**: Medium · **Story Points**: 5
+**Difficulty**: Medium · **Story Points**: 5
 
-Кнопка "Export to CSV" у списку items. Backend стримить великі датасети без завантаження в памʼять.
+An "Export to CSV" button on the items list. The backend streams large datasets without loading them into memory.
 
 **Backend:**
-- Endpoint `GET /api/v1/items/export?format=csv`
-- `StreamingResponse` з `csv.writer`
-- Підтримка фільтрів `?q=`, `?tag=`, `?favorite=`
-- Header `Content-Disposition: attachment; filename=items-YYYY-MM-DD.csv`
-- Тест на 50K rows (memory < 50MB)
+- `GET /api/v1/items/export?format=csv` endpoint
+- `StreamingResponse` with `csv.writer`
+- Honor filters `?q=`, `?tag=`, `?favorite=`
+- `Content-Disposition: attachment; filename=items-YYYY-MM-DD.csv` header
+- Test with 50K rows (memory < 50MB)
 
 **Frontend:**
-- Кнопка "Export" у toolbar
-- Прогрес-індикатор під час downloading
-- Враховує поточні фільтри списку
+- "Export" button in the toolbar
+- Progress indicator during download
+- Respects current list filters
 
 ---
 
 ## SDD-7 — Activity Log (audit middleware)
 
-**Складність**: Hard · **Story Points**: 13
+**Difficulty**: Hard · **Story Points**: 13
 
-Кожна mutating операція (POST/PUT/PATCH/DELETE) логується в audit-таблицю з actor, resource, action, before/after diff.
+Every mutating operation (POST/PUT/PATCH/DELETE) is logged into an audit table with actor, resource, action, and a before/after diff.
 
 **Backend:**
-- Модель `ActivityLog` (id, actor_id, action, resource_type, resource_id, payload_diff JSONB, ip, ts)
-- FastAPI middleware: перехоплює всі mutating routes
-- JSON-diff для before/after (через `jsondiff` або власний)
-- Alembic migration з partitioning по місяцю
-- Endpoint `GET /api/v1/activity?actor=&resource=&from=&to=` з permissions (superuser only)
-- Async write (BackgroundTask) — не блокує response
+- `ActivityLog` model (id, actor_id, action, resource_type, resource_id, payload_diff JSONB, ip, ts)
+- FastAPI middleware: intercepts all mutating routes
+- JSON diff for before/after (via `jsondiff` or homegrown)
+- Alembic migration with monthly partitioning
+- `GET /api/v1/activity?actor=&resource=&from=&to=` endpoint with permissions (superuser only)
+- Async write (BackgroundTask) — doesn't block the response
 
 **Frontend:**
-- Сторінка `/admin/activity`
+- `/admin/activity` page
 - Filter panel (date range, actor, resource type)
-- Detail modal показує diff
+- Detail modal that shows the diff
 - Pagination (cursor-based)
 
 ---
 
-## Підсумкова таблиця
+## Summary table
 
-| ID | Задача | Складність | Backend | Frontend |
-|----|--------|------------|---------|----------|
+| ID | Task | Difficulty | Backend | Frontend |
+|----|------|------------|---------|----------|
 | SDD-1 | Tags (M2M) | Easy | model, migration, CRUD, filter | badge, multiselect, integration |
 | SDD-2 | Search & Filter | Easy | q param, ILIKE, escape | SearchBar, debounce, URL state |
 | SDD-3 | Comments | Medium | model, migration, permissions | list, form, optimistic |
@@ -163,27 +163,27 @@ Dashboard-сторінка з агрегаціями: items per week (line chart
 
 ---
 
-## Як обрати задачі
+## How to pick tasks
 
-- **Перша задача**: SDD-2 (вже розписана у `SPEC_KIT_WORKFLOW_GUIDE.md`).
-- **Друга задача**: SDD-5 (Favorites) — приємне практикування `/clarify` (нюанси optimistic UI).
-- **Третя задача**: SDD-3 (Comments) — серйозний `/clarify` через permissions.
-- **Челенж**: SDD-7 (Activity Log) — спека буде складна, але `/analyze` врятує.
-
----
-
-## Як здавати роботу
-
-Для кожної задачі:
-
-1. ✅ Окрема git-branch `<task-id>-<slug>` (наприклад, `SDD-2-search-filter`).
-2. ✅ Папка `specs/<NNN>-<slug>/` із усіма артефактами (`spec.md`, `plan.md`, `tasks.md`, `research.md`, `data-model.md`, `contracts/`, `quickstart.md`, `checklists/`).
-3. ✅ Реалізація — backend + frontend + тести.
-4. ✅ PR з description, що посилається на `specs/<NNN>-<slug>/quickstart.md` як «Definition of Done».
-5. ✅ Усі задачі у `tasks.md` помічені `[X]`.
-6. ✅ Constitution Check у `plan.md` пройдений (або обґрунтовано в Complexity Tracking).
-7. ✅ `/speckit.analyze` без CRITICAL/HIGH findings.
+- **First task**: SDD-2 (already walked through in `SPEC_KIT_WORKFLOW_GUIDE.md`).
+- **Second task**: SDD-5 (Favorites) — a nice exercise in `/clarify` (the nuances of optimistic UI).
+- **Third task**: SDD-3 (Comments) — a serious `/clarify` thanks to permissions.
+- **Challenge**: SDD-7 (Activity Log) — the spec will be complex, but `/analyze` will save you.
 
 ---
 
-> 🚀 **Готові починати?** Відкрийте `TASKS_JIRA.md` для детальних acceptance criteria і subtask-ів першої задачі.
+## How to deliver work
+
+For each task:
+
+1. ✅ A separate git branch `<task-id>-<slug>` (for example, `SDD-2-search-filter`).
+2. ✅ A `specs/<NNN>-<slug>/` folder with all artifacts (`spec.md`, `plan.md`, `tasks.md`, `research.md`, `data-model.md`, `contracts/`, `quickstart.md`, `checklists/`).
+3. ✅ Implementation — backend + frontend + tests.
+4. ✅ A PR with a description that links to `specs/<NNN>-<slug>/quickstart.md` as the "Definition of Done".
+5. ✅ Every task in `tasks.md` marked `[X]`.
+6. ✅ Constitution Check in `plan.md` passing (or justified in Complexity Tracking).
+7. ✅ `/speckit.analyze` clean of CRITICAL/HIGH findings.
+
+---
+
+> 🚀 **Ready to start?** Open `TASKS_JIRA.md` for detailed acceptance criteria and the subtasks of the first task.

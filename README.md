@@ -1,53 +1,53 @@
-# Spec-Kit Training — Навчальний план для девелоперів
+# Spec-Kit Training — Curriculum for Developers
 
-> Практичний курс з Spec-Driven Development з використанням **GitHub Spec-Kit** на реальному full-stack проекті.
+> A hands-on course on Spec-Driven Development using **GitHub Spec-Kit** on a real full-stack project.
 
-Курс розроблено за зразком навчальних програм для AI-driven development. Мета — провести інженера від нульового знайомства зі spec-kit до впевненого впровадження методології в робочих проектах команди.
-
----
-
-## Зміст курсу
-
-### Базовий блок (мінімум для одинокого вивчення)
-
-| Документ | Призначення |
-|----------|-------------|
-| `README.md` *(цей файл)* | Точка входу. 4 стадії + 6 сценаріїв + рекомендації |
-| `PROJECT_SETUP.md` | Стадія 1: розгортання тренувального проекту (FastAPI + React) |
-| `SPEC-KIT-docs.md` | Довідник: філософія SDD, команди, артефакти, project memory, advanced features |
-| `SPEC_KIT_WORKFLOW_GUIDE.md` | End-to-end проходження однієї задачі (SDD-2) |
-| `SPEC_KIT_USE_CASES.md` | 9 сценаріїв від Beginner до Advanced |
-| `TASKS.md` | Бекенд із 7 практичних задач (стислий формат) |
-| `TASKS_JIRA.md` | Ті самі задачі у форматі Jira-сторі (детально) |
-
-### Поглиблений блок (для команд і реальних проектів)
-
-| Документ | Призначення |
-|----------|-------------|
-| `SCRUM_INTEGRATION.md` | Інтеграція spec-kit зі Scrum-церемоніями: грумінг, планінг, стендап, демо, ретро. Матриця ролей. Jira mapping. DoR/DoD |
-| `CONSTITUTION_GUIDE.md` | Глибокий гайд по `.specify/memory/constitution.md`: як писати, як еволюціонувати, реальний приклад v1.0 → v2.x за 12 місяців |
-| `SPECS_HYGIENE.md` | Підтримка `specs/` на масштабі (100+ фіч): lifecycle states, archival pattern, domain hierarchy, **5 паттернів currency maintenance** (A–E), **3 рівні автоматизації sync**, manifest, quarterly grooming, скрипти |
+The course is modeled after training programs for AI-driven development. The goal is to take an engineer from zero familiarity with spec-kit to confidently rolling the methodology out across the team's working projects.
 
 ---
 
-## Тренувальний проект
+## Course contents
 
-Курс побудовано навколо публічного шаблону **`fastapi/full-stack-fastapi-template`**:
+### Core block (minimum for self-study)
 
-- **Backend**: FastAPI · SQLModel · Alembic · PostgreSQL
-- **Frontend**: React · TypeScript · TanStack Query · Vite
-- **Інфраструктура**: Docker Compose, Traefik, GitHub Actions
-- **Дефолтний логін**: `admin@example.com` / `changethis`
+| Document | Purpose |
+|----------|---------|
+| `README.md` *(this file)* | Entry point. 4 stages + 6 scenarios + recommendations |
+| `PROJECT_SETUP.md` | Stage 1: spinning up the training project (FastAPI + React) |
+| `SPEC-KIT-docs.md` | Reference: SDD philosophy, commands, artifacts, project memory, advanced features |
+| `SPEC_KIT_WORKFLOW_GUIDE.md` | End-to-end walkthrough of a single task (SDD-2) |
+| `SPEC_KIT_USE_CASES.md` | 9 scenarios from Beginner to Advanced |
+| `TASKS.md` | Backlog of 7 hands-on tasks (concise format) |
+| `TASKS_JIRA.md` | The same tasks in Jira-story format (detailed) |
 
-Вибір цього шаблону невипадковий: він достатньо реалістичний (ORM, міграції, auth, тести), але водночас компактний — повний цикл розробки фічі займає 1–3 години, що ідеально для тренінгу.
+### Advanced block (for teams and real projects)
 
-> 💡 **Ключовий принцип**: усі команди spec-kit, які ви будете виконувати в цьому курсі, працюють так само на будь-якому реальному проекті у вашій компанії. Тренувальний шаблон — лише пісочниця.
+| Document | Purpose |
+|----------|---------|
+| `SCRUM_INTEGRATION.md` | Integrating spec-kit with Scrum ceremonies: grooming, planning, standup, demo, retro. Role matrix. Jira mapping. DoR/DoD |
+| `CONSTITUTION_GUIDE.md` | Deep dive into `.specify/memory/constitution.md`: how to write it, how to evolve it, real example v1.0 → v2.x over 12 months |
+| `SPECS_HYGIENE.md` | Maintaining `specs/` at scale (100+ features): lifecycle states, archival pattern, domain hierarchy, **5 currency maintenance patterns** (A–E), **3 levels of sync automation**, manifest, quarterly grooming, scripts |
 
 ---
 
-## Стадія 1 — Розгорнути проект
+## Training project
 
-Виконайте `PROJECT_SETUP.md` повністю. Файл написано як агентський промпт — ви можете або робити кроки вручну, або передати його AI-агенту в окремому чаті.
+The course is built around the public template **`fastapi/full-stack-fastapi-template`**:
+
+- **Backend**: FastAPI, SQLModel, Alembic, PostgreSQL
+- **Frontend**: React, TypeScript, TanStack Query, Vite
+- **Infrastructure**: Docker Compose, Traefik, GitHub Actions
+- **Default login**: `admin@example.com` / `changethis`
+
+This template was picked deliberately: it is realistic enough (ORM, migrations, auth, tests) yet compact enough that a full feature development cycle fits into 1–3 hours, which is ideal for training.
+
+> 💡 **Key principle**: every spec-kit command you will run in this course works exactly the same on any real project at your company. The training template is just a sandbox.
+
+---
+
+## Stage 1 — Stand up the project
+
+Work through `PROJECT_SETUP.md` end to end. The file is written as an agent prompt — you can either follow the steps manually or hand it off to an AI agent in a separate chat.
 
 ```bash
 git clone https://github.com/fastapi/full-stack-fastapi-template.git
@@ -56,162 +56,162 @@ cp .env.example .env
 docker compose up -d
 ```
 
-**Перевірка успіху:**
+**Success check:**
 
-- ✅ http://localhost:5173 відкриває фронтенд
-- ✅ http://localhost:8000/docs показує Swagger UI
-- ✅ Логін `admin@example.com` / `changethis` працює
+- ✅ http://localhost:5173 loads the frontend
+- ✅ http://localhost:8000/docs shows the Swagger UI
+- ✅ Login as `admin@example.com` / `changethis` works
 
-**Очікуваний час**: 20–40 хвилин.
-
----
-
-## Стадія 2 — Що таке Spec-Driven Development
-
-Прочитайте `SPEC-KIT-docs.md` повністю. Зверніть увагу на ці три розділи:
-
-1. **Філософія SDD** — чому код *слугує* специфікації, а не навпаки.
-2. **Команди spec-kit** — `/speckit.constitution`, `/speckit.specify`, `/speckit.clarify`, `/speckit.plan`, `/speckit.tasks`, `/speckit.analyze`, `/speckit.implement`.
-3. **Артефакти** — що саме і де генерується (`.specify/`, `specs/<feature>/`).
-
-> 💡 **Практична рекомендація**: не пропускайте розділ про філософію. Без розуміння *чому* SDD виглядає як «зайва бюрократія» — і команда відмовиться його використовувати.
-
-**Очікуваний час**: 45–60 хвилин читання.
+**Estimated time**: 20–40 minutes.
 
 ---
 
-## Стадія 3 — Встановити spec-kit
+## Stage 2 — What Spec-Driven Development is
 
-Spec-kit ставиться через `uvx` (рекомендовано) або `pipx`. Працює з Claude Code, Copilot, Cursor, Gemini, Codex, Cursor, Windsurf і ще понад 25 AI-агентами.
+Read `SPEC-KIT-docs.md` end to end. Pay particular attention to these three sections:
 
-### Передумови
+1. **SDD philosophy** — why code *serves* the specification, not the other way around.
+2. **Spec-kit commands** — `/speckit.constitution`, `/speckit.specify`, `/speckit.clarify`, `/speckit.plan`, `/speckit.tasks`, `/speckit.analyze`, `/speckit.implement`.
+3. **Artifacts** — what gets generated and where (`.specify/`, `specs/<feature>/`).
+
+> 💡 **Practical tip**: don't skip the philosophy section. Without understanding *why*, SDD looks like "extra bureaucracy" and the team will refuse to use it.
+
+**Estimated time**: 45–60 minutes of reading.
+
+---
+
+## Stage 3 — Install spec-kit
+
+Spec-kit is installed via `uvx` (recommended) or `pipx`. It works with Claude Code, Copilot, Cursor, Gemini, Codex, Windsurf, and 25+ other AI agents.
+
+### Prerequisites
 
 - Python 3.11+
-- `uv` (`pip install uv` або `brew install uv`)
+- `uv` (`pip install uv` or `brew install uv`)
 - `git`
-- AI-агент (Claude Code, Copilot, Cursor, або інший)
+- An AI agent (Claude Code, Copilot, Cursor, or another)
 
-### Швидке встановлення в існуючий проект
+### Quick install into an existing project
 
 ```bash
 cd full-stack-fastapi-template
 uvx --from git+https://github.com/github/spec-kit.git specify init . --integration claude
 ```
 
-### Перевірка
+### Verification
 
 ```bash
 specify check
 specify integration list
 ```
 
-У редакторі (Claude Code / Copilot / Cursor) перевірте, що автокомпліт показує `/speckit.constitution`, `/speckit.specify`, `/speckit.plan`, `/speckit.tasks`, `/speckit.implement`.
+In your editor (Claude Code / Copilot / Cursor), confirm that autocomplete shows `/speckit.constitution`, `/speckit.specify`, `/speckit.plan`, `/speckit.tasks`, `/speckit.implement`.
 
-> ⚠️ **Важливо**: офіційне джерело — лише `github.com/github/spec-kit`. Будь-який пакет на PyPI з назвою `specify-cli` *НЕ* пов'язаний з GitHub.
+> ⚠️ **Important**: the only official source is `github.com/github/spec-kit`. Any PyPI package named `specify-cli` is *NOT* affiliated with GitHub.
 
-**Очікуваний час**: 10–20 хвилин.
-
----
-
-## Стадія 4 — Практичні сценарії
-
-Шість сценаріїв, від найпростішого до найскладнішого. Деталі — в `SPEC_KIT_USE_CASES.md`.
-
-### Сценарій 1 — Quick Spec Flow (для маленьких змін)
-
-| | |
-|---|---|
-| **Коли застосовувати** | Маленька ізольована фіча або баг-фікс |
-| **Час** | 30–60 хв |
-| **Команди** | `/speckit.specify` → `/speckit.plan` → `/speckit.tasks` → `/speckit.implement` |
-
-**Приклад:**
-
-```
-/speckit.specify Додати endpoint GET /api/v1/items/random,
-який повертає випадковий item з бази для авторизованого користувача.
-```
-
-Пропускаємо `/clarify` і `/analyze` — для маленької зміни ці кроки створюють зайвий шум.
-
-> ⚠️ **Важливо**: `/speckit.tasks` пропускати **не можна** — `/speckit.implement` читає `tasks.md` як вхідні дані і блокує виконання без нього. Деталі — в `SPEC_KIT_USE_CASES.md`, Сценарій 1.
+**Estimated time**: 10–20 minutes.
 
 ---
 
-### Сценарій 2 — Brownfield Feature (повний цикл на існуючому проекті)
+## Stage 4 — Hands-on scenarios
+
+Six scenarios, from the simplest to the most involved. Details live in `SPEC_KIT_USE_CASES.md`.
+
+### Scenario 1 — Quick Spec Flow (for small changes)
 
 | | |
 |---|---|
-| **Коли застосовувати** | Нова фіча в існуючому коді (типовий випадок у компанії) |
-| **Час** | 2–4 години |
-| **Команди** | `/speckit.constitution` *(один раз)* → `/speckit.specify` → `/speckit.clarify` → `/speckit.plan` → `/speckit.tasks` → `/speckit.analyze` → `/speckit.implement` |
+| **When to use** | A small isolated feature or bug fix |
+| **Time** | 30–60 min |
+| **Commands** | `/speckit.specify` → `/speckit.plan` → `/speckit.tasks` → `/speckit.implement` |
 
-Це **основний** воркфлоу для робочих проектів. Повне проходження дивіться в `SPEC_KIT_WORKFLOW_GUIDE.md` (на прикладі задачі **SDD-2: Search & Filter**).
+**Example:**
 
 ```
-/speckit.specify Додати пошук по полю title у списку items
-з debounce 300ms і лічильником "Found N items".
+/speckit.specify Add a GET /api/v1/items/random endpoint
+that returns a random item from the database for the authenticated user.
+```
+
+We skip `/clarify` and `/analyze` — for a small change these steps just add noise.
+
+> ⚠️ **Important**: `/speckit.tasks` **cannot** be skipped — `/speckit.implement` reads `tasks.md` as its input and refuses to run without it. See `SPEC_KIT_USE_CASES.md`, Scenario 1, for details.
+
+---
+
+### Scenario 2 — Brownfield Feature (full cycle on an existing project)
+
+| | |
+|---|---|
+| **When to use** | A new feature in existing code (the typical case at a company) |
+| **Time** | 2–4 hours |
+| **Commands** | `/speckit.constitution` *(once)* → `/speckit.specify` → `/speckit.clarify` → `/speckit.plan` → `/speckit.tasks` → `/speckit.analyze` → `/speckit.implement` |
+
+This is the **main** workflow for production projects. For a full walkthrough see `SPEC_KIT_WORKFLOW_GUIDE.md` (using task **SDD-2: Search & Filter** as the example).
+
+```
+/speckit.specify Add search by the title field on the items list
+with a 300ms debounce and a "Found N items" counter.
 ```
 
 ---
 
-### Сценарій 3 — Constitution-First (нова команда / новий проект)
+### Scenario 3 — Constitution-First (new team / new project)
 
 | | |
 |---|---|
-| **Коли застосовувати** | Старт нового проекту або введення SDD у команду |
-| **Час** | 1 день |
-| **Команди** | `/speckit.constitution` → дискусія → доопрацювання |
+| **When to use** | Starting a new project or rolling SDD out to a team |
+| **Time** | 1 day |
+| **Commands** | `/speckit.constitution` → discussion → revisions |
 
-**Приклад промпту:**
+**Example prompt:**
 
 ```
-/speckit.constitution Створи принципи для нашої команди: code quality
-(80%+ test coverage, mandatory code review), testing standards (TDD для
+/speckit.constitution Create principles for our team: code quality
+(80%+ test coverage, mandatory code review), testing standards (TDD for
 core domain), UX consistency (Figma design system), performance
-(<200ms p95). Додай governance: усі MUST-принципи можна змінювати
-тільки через RFC + 2 review.
+(<200ms p95). Add governance: any MUST principle can only be changed
+through an RFC + 2 reviews.
 ```
 
-Результат: `.specify/memory/constitution.md`, який стає реальним контрактом для всіх наступних `/plan` через **Constitution Check** gates.
+The result: `.specify/memory/constitution.md`, which becomes a real contract for every subsequent `/plan` via the **Constitution Check** gates.
 
 ---
 
-### Сценарій 4 — Reset / Re-spec (виявили, що йдемо не туди)
+### Scenario 4 — Reset / Re-spec (we realized we're heading the wrong way)
 
 | | |
 |---|---|
-| **Коли застосовувати** | Після `/plan` зрозуміли, що бракує вимог, або змінився скоуп |
-| **Час** | 30–90 хв |
-| **Команди** | `/speckit.clarify` повторно → `/speckit.specify` (edit) → `/speckit.plan` (re-run) |
+| **When to use** | After `/plan` you realize requirements are missing or scope changed |
+| **Time** | 30–90 min |
+| **Commands** | `/speckit.clarify` again → `/speckit.specify` (edit) → `/speckit.plan` (re-run) |
 
-> 💡 **Ключове правило**: краще передумати на фазі specs, ніж після `/implement`. Один день на спеку економить тиждень рефакторингу.
-
----
-
-### Сценарій 5 — Team Collaboration *(дискусія)*
-
-Як впровадити spec-kit у команду 5–10 осіб:
-
-- Хто пише `constitution.md` (зазвичай tech lead + staff engineer)
-- Як ревʼювити specs (PR на сам файл `spec.md` ще *до* `/plan`)
-- Як ділити задачі (один `specs/<feature>/` = один PR = один тікет)
-- Як інтегрувати з Jira/Linear (`/speckit.taskstoissues`)
-- Як вирішувати конфлікти між constitution і реальністю (RFC)
-
-Не виконуємо команд — обговорюємо в групі.
+> 💡 **Key rule**: it's better to change your mind during the specs phase than after `/implement`. One day on the spec saves a week of refactoring.
 
 ---
 
-### Сценарій 6 — Greenfield *(дискусія)*
+### Scenario 5 — Team Collaboration *(discussion)*
 
-Як стартувати **новий** проект через spec-kit:
+How to roll spec-kit out to a 5–10 person team:
+
+- Who writes `constitution.md` (typically tech lead + staff engineer)
+- How to review specs (PR on the `spec.md` file itself, *before* `/plan`)
+- How to slice work (one `specs/<feature>/` = one PR = one ticket)
+- How to integrate with Jira/Linear (`/speckit.taskstoissues`)
+- How to resolve conflicts between the constitution and reality (RFC)
+
+No commands here — just a group discussion.
+
+---
+
+### Scenario 6 — Greenfield *(discussion)*
+
+How to start a **new** project with spec-kit:
 
 ```bash
 specify init my-new-project --integration claude
 ```
 
-Послідовність:
+Sequence:
 
 ```
 /speckit.constitution → /speckit.specify (high-level vision)
@@ -219,152 +219,319 @@ specify init my-new-project --integration claude
                      → /speckit.plan → /speckit.tasks → /speckit.implement
 ```
 
-На greenfield-проекті spec-kit економить найбільше часу, бо не треба описувати «як новий код інтегрується з існуючим».
+On a greenfield project spec-kit saves the most time, because there's no need to describe "how the new code integrates with the existing one."
 
 ---
 
-## Бекенд практичних задач
+## Hands-on task backlog
 
-`TASKS.md` містить **7 задач** на тренувальному проекті, від Easy до Hard. Виберіть мінімум **3 задачі** для самостійного виконання:
+`TASKS.md` contains **7 tasks** on the training project, ranging from Easy to Hard. Pick at least **3 tasks** to do on your own:
 
-| ID | Задача | Складність | SP |
-|----|--------|------------|----|
-| SDD-1 | Tags для items (M2M) | Easy | 5 |
-| SDD-2 | Search & Filter з debounce | Easy | 3 |
-| SDD-3 | Comments з permissions | Medium | 8 |
-| SDD-4 | Dashboard з recharts | Medium | 8 |
-| SDD-5 | Favorites з optimistic UI | Easy | 5 |
-| SDD-6 | CSV Export через StreamingResponse | Medium | 5 |
+| ID | Task | Difficulty | SP |
+|----|------|------------|----|
+| SDD-1 | Tags for items (M2M) | Easy | 5 |
+| SDD-2 | Search & Filter with debounce | Easy | 3 |
+| SDD-3 | Comments with permissions | Medium | 8 |
+| SDD-4 | Dashboard with recharts | Medium | 8 |
+| SDD-5 | Favorites with optimistic UI | Easy | 5 |
+| SDD-6 | CSV Export via StreamingResponse | Medium | 5 |
 | SDD-7 | Activity Log (audit middleware) | Hard | 13 |
 
-Детальний опис у форматі Jira (Acceptance Criteria, Subtasks, Technical Notes) — у `TASKS_JIRA.md`.
+Detailed Jira-style descriptions (Acceptance Criteria, Subtasks, Technical Notes) live in `TASKS_JIRA.md`.
 
 ---
 
-## Рекомендований шлях для одинака (40 годин)
+## Recommended path for solo learners (40 hours)
 
 ```
-День 1 (8 год)  — Стадії 1–3 + читання SPEC-KIT-docs (включно з 8.5 і 8.6)
-День 2 (8 год)  — Сценарій 1 (Quick Flow) + SDD-1 (Tags)
-День 3 (8 год)  — Сценарій 2 (Brownfield) + SDD-2 (Search) — повний цикл
-День 4 (8 год)  — SDD-3 або SDD-5 + SDD-6 + читання CONSTITUTION_GUIDE
-День 5 (8 год)  — SDD-7 (Hard) + ретроспектива + написання внутрішнього constitution.md
+Day 1 (8h)  — Stages 1–3 + reading SPEC-KIT-docs (including 8.5 and 8.6)
+Day 2 (8h)  — Scenario 1 (Quick Flow) + SDD-1 (Tags)
+Day 3 (8h)  — Scenario 2 (Brownfield) + SDD-2 (Search) — full cycle
+Day 4 (8h)  — SDD-3 or SDD-5 + SDD-6 + reading CONSTITUTION_GUIDE
+Day 5 (8h)  — SDD-7 (Hard) + retrospective + writing your team's internal constitution.md
 ```
 
-## Рекомендований шлях для команди (workshop, 2 дні)
+## Recommended path for a team (workshop, 2 days)
 
 ```
-День 1 ранок    — Стадії 1–3 (всі разом)
-День 1 вечір    — Сценарій 2 наживо: ведучий проходить SDD-2 від /specify до /implement
-                  (учасники повторюють у себе синхронно)
-День 2 ранок    — Парами: одна задача на пару (SDD-3, SDD-4, SDD-5)
-День 2 вечір    — Читання SCRUM_INTEGRATION + CONSTITUTION_GUIDE +
-                  написання draft constitution.md команди
+Day 1 morning  — Stages 1–3 (everyone together)
+Day 1 evening  — Scenario 2 live: facilitator runs SDD-2 from /specify to /implement
+                 (participants follow along on their own machines)
+Day 2 morning  — In pairs: one task per pair (SDD-3, SDD-4, SDD-5)
+Day 2 evening  — Reading SCRUM_INTEGRATION + CONSTITUTION_GUIDE +
+                 drafting the team's constitution.md
 ```
 
-## Рекомендований шлях для tech lead, що впроваджує SDD у команду (2 тижні)
+## Recommended path for a tech lead rolling SDD out to a team (2 weeks)
 
 ```
-Тиждень 1
-  - День 1-2: Champion-pilot — самостійно проходите Сценарій 2 на 2 фічах
-  - День 3:   Читання SCRUM_INTEGRATION і CONSTITUTION_GUIDE
-  - День 4-5: Drafting workshop (constitution.md v1.0 з ratification)
+Week 1
+  - Days 1-2: Champion pilot — run Scenario 2 yourself on 2 features
+  - Day 3:    Read SCRUM_INTEGRATION and CONSTITUTION_GUIDE
+  - Days 4-5: Drafting workshop (constitution.md v1.0 with ratification)
 
-Тиждень 2
-  - День 1-3: Команда (3-4 інженери) робить пілот на 2-3 фічах із spec-kit
-  - День 4:   Ретроспектива пілоту → корекції constitution + processes
-  - День 5:   Прийняття рішення про повне впровадження або відмову
+Week 2
+  - Days 1-3: Team (3-4 engineers) pilots spec-kit on 2-3 features
+  - Day 4:    Pilot retrospective → corrections to constitution + processes
+  - Day 5:    Decision on full rollout or rollback
 ```
 
 ---
 
-## Часті помилки початківців
+## Common beginner mistakes
 
-1. **Згадують стек у `/specify`.** Спека має описувати *що* і *чому*, а не *як*. Стек — у `/plan`.
-2. **Пропускають `/clarify`.** Економлять 5 хвилин — втрачають 2 години на рефакторинг.
-3. **Не запускають `/analyze` перед `/implement`.** Пропускають CRITICAL-знахідки → агент пише код під неузгоджені вимоги.
-4. **Залишають `[NEEDS CLARIFICATION]` маркери.** Якщо в `spec.md` є невирішені питання — `/plan` згенерує сміття.
-5. **Не оновлюють `constitution.md`.** Документ застаріває за пів року, а Constitution Check продовжує посилатись на старі принципи.
-6. **Запускають `/implement` з incomplete checklist.** Spec-kit запитає підтвердження — *не* кажіть «yes» автоматично.
-
----
-
-## Підтримка актуальності специфікацій між спрінтами
-
-Окрема практична проблема, що проявляється на проектах від 30 фіч і вище: `specs/<feature>/spec.md` створюється як snapshot моменту створення фічі. Через 6 місяців після ship-у вона перетворюється на історичний документ, але читачі продовжують її використовувати, думаючи що це поточна реальність. Це визнана проблема у community ([Discussion #152](https://github.com/github/spec-kit/discussions/152)).
-
-Spec-kit за дефолтом не вирішує цього — це питання командної дисципліни і вибраного паттерну. Курс описує **5 паттернів** і **3 рівні автоматизації sync** агностично, без рекомендацій:
-
-### 5 паттернів currency
-
-| Паттерн | Суть | Currency frequency |
-|---------|------|---------------------|
-| **A. Atomic + Frozen** | Specs immutable після ship; current state не підтримується | None |
-| **B. Supersession Chain** | Frontmatter `supersedes` / `superseded_by` будує ланцюг версій | Per-replacement |
-| **C. Living Domain Specs** | `specs/<domain>/domain.md` оновлюється кожним PR як частина DoD | Per-PR |
-| **D. Unified Spec** | Один файл на домен з `## Changelog` секцією | Per-commit |
-| **E. Hybrid** | `docs/architecture/<domain>.md` (high-level) + flat `specs/` (atomic deltas) | Per-quarter (або per-PR) |
-
-Кожен має свої плюси і мінуси (детально — в `SPECS_HYGIENE.md`), які залежать від:
-
-- **Розміру команди** — паттерн C важко тримати на 10+ людях через merge-конфлікти, паттерн D ламає механіку spec-kit.
-- **Частоти змін у домені** — паттерн A прийнятний для слабко еволюціонуючих доменів, паттерн B — для з чіткою заміною версій.
-- **Стратегії архівації** — паттерн C конфліктує з archival, паттерн E — ні.
-- **Дисципліни команди** — паттерн A не вимагає її взагалі, паттерн C — найвимогливіший.
-
-### 3 рівні автоматизації sync
-
-Незалежно від паттерну, можна задіяти один або кілька механізмів для зменшення дисциплінарного навантаження:
-
-| Рівень | Тригер | Тип update | Інфраструктура |
-|--------|--------|-----------|----------------|
-| **Рівень 1** — модифікація шаблону `plan.md` | Per-`/plan` | Proposal (prose) | Markdown patch у `.specify/templates/` |
-| **Рівень 2** — hooks через `extensions.yml` | Per-`/implement` | Mechanical (changelog append) | YAML + bash/python скрипт |
-| **Рівень 3** — кастомний slash-command | Manual (e.g. quarterly) | Proposal (prose, batch) | Шаблон `.specify/templates/commands/` |
-
-**Жоден з механізмів** не виконує auto-merge у current state docs — усі продукують **review-ready proposals**, які людина apply-є або відкидає. Це свідома обмеженість для уникнення накопичення хибних AI-генерованих змін.
-
-> 📖 **Деталі**: `SPECS_HYGIENE.md` містить розгорнутий опис кожного паттерну (механіка / що працює теоретично / що ламається на практиці / +/-), таблицю сумісності паттернів і механізмів, чек-лист на масштабі.
+1. **Mentioning the stack in `/specify`.** The spec should describe *what* and *why*, not *how*. The stack belongs in `/plan`.
+2. **Skipping `/clarify`.** Save 5 minutes — lose 2 hours to refactoring.
+3. **Not running `/analyze` before `/implement`.** You miss CRITICAL findings → the agent ships code against inconsistent requirements.
+4. **Leaving `[NEEDS CLARIFICATION]` markers in place.** If `spec.md` has unresolved questions, `/plan` will generate garbage.
+5. **Not updating `constitution.md`.** The document goes stale within six months while Constitution Check keeps citing the old principles.
+6. **Running `/implement` against an incomplete checklist.** Spec-kit will ask for confirmation — don't say "yes" reflexively.
 
 ---
 
-## Ключові інсайти, які вийшли з курсу
+## Keeping specifications current between sprints
 
-Якщо ви вивчите усі сім (десять разом із поглибленим блоком) документів — наступне має увійти у вашу робочу свідомість:
+This is a separate practical problem that surfaces on projects with 30+ features: `specs/<feature>/spec.md` is created as a snapshot of the moment the feature was conceived. Six months after ship it has turned into a historical document, but readers still consult it as if it were the current reality. This is a recognized issue in the community ([Discussion #152](https://github.com/github/spec-kit/discussions/152)).
 
-**1. Spec-kit — інженерний робочий простір, не заміна Jira.** Jira залишається планувальником і трекером. Зв'язок: Jira ID у назві папки + `Resolves PROJ-XXXX` у PR.
+Spec-kit doesn't solve this out of the box — it's a matter of team discipline and the pattern you choose. The course describes **5 patterns** agnostically, without recommendations. Overview:
 
-**2. Constitution — виконавчий контракт, не лозунги.** Кожен принцип має проходити тест: «чи може агент порушити це у `/plan`, і чи Constitution Check це зловить?». Якщо ні — це не принцип. Деталі — в `CONSTITUTION_GUIDE.md`.
+| Pattern | Essence | Currency frequency |
+|---------|---------|---------------------|
+| **A. Atomic + Frozen** | Specs immutable after ship; current state isn't maintained | None |
+| **B. Supersession Chain** | Frontmatter `supersedes` / `superseded_by` builds a version chain | Per-replacement |
+| **C. Living Domain Specs** | `specs/<domain>/domain.md` is updated on every PR as part of DoD | Per-PR |
+| **D. Unified Spec** | One file per domain with a `## Changelog` section | Per-commit |
+| **E. Hybrid** | `docs/architecture/<domain>.md` (high-level) + flat `specs/` (atomic deltas) | Per-quarter (or per-PR) |
 
-**3. Project memory має 3 рівні**: інваріанти (constitution, init-options), живий контекст (CLAUDE.md/AGENTS.md), історія рішень (specs/). Деталі — в `SPEC-KIT-docs.md`, секція 8.5.
+The choice depends on four factors:
 
-**4. SP оцінюються на рівні Functional Requirements, не tasks.** FR → Jira stories; tasks.md → executable checklist у репо. Деталі — в `SCRUM_INTEGRATION.md`.
+- **Team size** — pattern C is hard to keep alive with 10+ people due to merge conflicts; pattern D breaks the spec-kit mechanics.
+- **Rate of change in the domain** — pattern A is acceptable for slowly evolving domains; pattern B fits domains with clear version replacement.
+- **Archival strategy** — pattern C conflicts with archival; pattern E does not.
+- **Team discipline** — pattern A demands none of it; pattern C is the most demanding.
 
-**5. На масштабі без curation `specs/` стає смітником.** Lifecycle states + quarterly grooming + domain hierarchy. **5 паттернів** підтримки актуальності specs між спрінтами (Atomic+Frozen, Supersession Chain, Living Domain Specs, Unified Spec, Hybrid) + **3 рівні автоматизації sync** (template mod, hooks, custom command). Деталі — в `SPECS_HYGIENE.md`.
+### Pattern A — Atomic + Frozen
 
-**6. `/speckit.tasks` обов'язковий навіть у Quick Flow** — `/implement` без нього не працює. Скорочений флоу: пропускаєте `/clarify` і `/analyze`, але не `/tasks`.
+Each spec is immutable after ship. It is never edited under any circumstances. Current state doesn't exist as a separate artifact — to understand how a feature works today, the reader has to scan all relevant specs and synthesize the answer themselves.
 
-**7. Spec-kit використовує advanced agent features**: skills mode (Claude/Codex), sub-agent dispatch у research-фазі, parallel markers `[P]` в `/implement`. Деталі — в `SPEC-KIT-docs.md`, секція 8.6.
+**Mechanics:**
 
-**8. Інтеграція з командою — поетапна, не «з понеділка всі переходимо».** Champion pilot → showcase → constitution drafting → командний пілот → стандарт. План — в `SCRUM_INTEGRATION.md`.
+```yaml
+# specs/015-add-mfa/spec.md  (after ship — frozen forever)
+---
+status: implemented
+implemented_date: 2026-01-15
+---
+```
+
+**Pros:**
+- Minimal effort — nothing is required after ship
+- Clean immutable history: good for compliance, audit, post-mortem
+- No merge conflicts in specs (because they aren't edited)
+- Conceptually simple: "spec = snapshot of the moment"
+
+**Cons:**
+- "How does it work today?" has no convenient answer
+- Drift from current state is inherent to the pattern **by definition**
+- Onboarding a new person is expensive: they have to scan 5–10 specs in a domain to reconstruct current state
+- At a scale of 100+ specs, current state becomes elusive
 
 ---
 
-## Що далі — для одинака
+### Pattern B — Supersession Chain
 
-Після завершення курсу:
+Each new spec explicitly marks its predecessor via frontmatter. This builds a chain of versions where the head of the chain is the current state.
 
-- Адаптуйте `constitution.md` під свою команду — використайте `CONSTITUTION_GUIDE.md` як шаблон процесу.
-- Створіть **внутрішній шаблон** spec-kit-проекту з вашою конституцією і прикладом spec.md — нові репозиторії стартують за 5 хвилин.
-- Інтегруйте `/speckit.taskstoissues` з Jira/Linear через MCP або власний скрипт.
-- Проведіть workshop за цим планом для решти команди.
+**Mechanics:**
 
-## Що далі — для tech lead команди
+```yaml
+# specs/023-passkeys/spec.md  (new)
+---
+supersedes: [015-add-mfa]
+status: implemented
+---
 
-- Champion pilot → showcase → drafting workshop → командний пілот (план в `SCRUM_INTEGRATION.md` секція «Як впровадити SDD у команду»).
-- Налаштуйте grooming/planning/retro ритуали згідно `SCRUM_INTEGRATION.md`.
-- Через 1 квартал — перший `SPECS_HYGIENE.md` ритуал (archival + index).
+# specs/015-add-mfa/spec.md  (predecessor, auto-updated)
+---
+status: superseded
+superseded_by: 023-passkeys
+---
+```
+
+A script can walk the chain to find the head — that is the current source of truth for the functionality.
+
+**Pros:**
+- Preserves history while still letting automation reach current state
+- Frontmatter format is automation-friendly (easy to parse)
+- Clear formal "this replaces that" relationship
+- Doesn't rely on human discipline at read time — the only discipline needed is to fill the field at write time
+
+**Cons:**
+- Doesn't capture **partial** replacements: features rarely *fully* replace their predecessors
+- Real relationships between features are often graphs (one-to-many, many-to-many), but a chain is strictly linear
+- Discipline around filling `supersedes` is critical at write time and slips easily
+- Deep chains (5+ versions) make navigation cumbersome
+- Doesn't describe additive evolution, where the spec *extends* an old one rather than replacing it
 
 ---
 
-> **Питання та фідбек**: тримайте репозиторій курсу як живий — додавайте власні сценарії, ускладнюйте задачі, фіксуйте свої best practices.
+### Pattern C — Living Domain Specs
+
+A separate folder with a `domain.md` for each bounded context — always current state. Atomic specs update `domain.md` as part of the DoD on every PR.
+
+**Mechanics:**
+
+```
+specs/
+├── auth/
+│   ├── domain.md              ← LIVING; updated on every PR
+│   ├── 001-user-auth/         ← historical, frozen
+│   ├── 015-add-mfa/           ← historical, frozen
+│   └── 023-passkeys/          ← latest; its PR updated domain.md
+└── items/
+    ├── domain.md
+    └── ...
+```
+
+`auth/domain.md` contains the up-to-date description of auth functionality. The atomic specs inside it are frozen delta records. The DoD rule: a PR doesn't merge without updating the affected sections of `domain.md`.
+
+**Pros:**
+- Domain locality — everything related to auth lives in one place
+- Single discovery path: a new person reads `auth/domain.md` for 5 minutes and has the full picture
+- Tight link between atomic changes and current state
+- Atomic specs inside remain frozen — they keep all the upsides of pattern A
+
+**Cons:**
+- **Conflicts with archival**: moving `specs/auth/015-add-mfa/` into `_archive/` breaks domain locality — either you don't archive, or you break the structure
+- Per-PR updates to `domain.md` create friction for the feature engineer: you want to ship the feature, but you also have to edit a huge document
+- When two teams work in the same domain in parallel, you get merge conflicts in `domain.md`
+- The domain folder grows fast: all specs + `domain.md` co-located; after a year `auth/` has 50–80 folders inside
+- High demand on team discipline — without it, `domain.md` drifts immediately
+
+---
+
+### Pattern D — Unified Spec
+
+One file per domain — `specs/auth/spec.md` — grows through commits. A `## Changelog` section at the bottom records the evolution.
+
+**Mechanics:**
+
+```markdown
+# Auth Spec (current)
+
+[everything that's current right now: user stories, FR, edge cases, key entities]
+
+## Changelog
+
+### 2026-04-28 — Added passkeys
+- Added WebAuthn support
+- TOTP marked as deprecated
+
+### 2026-01-15 — Added TOTP MFA
+- ...
+
+### 2025-09-10 — Initial auth (v1)
+- ...
+```
+
+Every change is a commit to the same file. Git history naturally preserves the evolution via `git log -p specs/auth/spec.md`.
+
+**Pros:**
+- Minimalist structure — one file per domain, no folders full of deltas
+- Currency comes for free: the head of the file is always current state
+- Git history carries the entire evolution automatically — `git log -p` gives the full sequence of changes
+- Low cognitive load: one place, one read
+
+**Cons:**
+- **Breaks the mechanics of spec-kit**: `/speckit.specify` creates a new folder, it doesn't edit an existing file — you need a custom workflow or forked templates
+- The file grows without bound: after 2 years a single domain hits 100+ KB and scrolling is painful
+- High risk of merge conflicts under parallel work — everyone edits the same file
+- The "atomic delta" concept is lost: it's hard to tell which specific changes shipped in a single release
+- Tight coupling to the git workflow — without `git log` you can't reconstruct history
+
+---
+
+### Pattern E — Hybrid (architecture docs + flat specs)
+
+Separate file space for current state (`docs/architecture/<domain>.md`) and a separate one for atomic deltas (`specs/<NNN-feature>/`). Architecture docs are high-level (1–2 pages); specs are detailed delta records.
+
+**Mechanics:**
+
+```
+docs/architecture/
+├── overview.md
+├── auth.md            ← current state of auth domain (≤2 pages)
+├── items.md
+└── billing.md
+
+specs/
+├── _archive/
+│   ├── 2025-Q4/
+│   │   └── 015-add-mfa/
+│   └── 2026-Q1/
+├── 042-webauthn-fallback/    ← active
+└── 048-bulk-edit/            ← active
+```
+
+Specs carry a `domain: auth` field in frontmatter so they can be queried by domain via a script. Architecture docs are updated either per-PR (through a template modification) or per-quarter (at the retro).
+
+**Pros:**
+- **Clean spec archival**: specs live in a flat structure and move into `_archive/` freely without touching architecture docs
+- Architecture docs are short (1–2 pages) — easier to maintain, smaller drift surface
+- Doesn't break spec-kit mechanics — standard workflow with no modifications
+- Different update cadences are possible: atomic specs move fast (per-PR), architecture moves slowly (per-quarter)
+- Clear separation of responsibility: the feature engineer writes the spec; the tech lead/architect maintains the architecture doc
+
+**Cons:**
+- **Two parallel systems** — risk of divergence between them
+- Without a sync process, architecture docs drift away from reality
+- Deciding "what goes in the spec vs. what goes in architecture" requires judgment — the boundary isn't crisp
+- It's not obvious to a new person which artifact to start with
+- Without quarterly reviews, architecture docs turn into historical documents
+
+---
+
+> 📖 **Details**: `SPECS_HYGIENE.md` contains an expanded write-up of each pattern (mechanics / what works in theory / what breaks in practice / pros and cons), a comparison table by scaling/conflict risk/spec-kit compatibility, and a checklist for scale.
+
+---
+
+## Key insights to take away from the course
+
+If you go through all seven (or ten, including the advanced block) documents, the following ought to become part of your working mental model:
+
+**1. Spec-kit is an engineering workspace, not a Jira replacement.** Jira stays the planner and tracker. The link: the Jira ID in the folder name + `Resolves PROJ-XXXX` in the PR.
+
+**2. The constitution is an enforceable contract, not a slogan list.** Every principle has to pass the test: "could the agent violate this in `/plan`, and would Constitution Check catch it?" If not, it's not a principle. See `CONSTITUTION_GUIDE.md` for details.
+
+**3. Project memory has 3 levels**: invariants (constitution, init options), live context (CLAUDE.md/AGENTS.md), decision history (specs/). See `SPEC-KIT-docs.md`, section 8.5.
+
+**4. SP are estimated at the level of Functional Requirements, not tasks.** FR → Jira stories; tasks.md → executable checklist in the repo. See `SCRUM_INTEGRATION.md`.
+
+**5. At scale, without curation, `specs/` turns into a dumping ground.** Lifecycle states + quarterly grooming + domain hierarchy. **5 patterns** for keeping specs current between sprints (Atomic+Frozen, Supersession Chain, Living Domain Specs, Unified Spec, Hybrid) + **3 levels of sync automation** (template mod, hooks, custom command). See `SPECS_HYGIENE.md`.
+
+**6. `/speckit.tasks` is mandatory even in the Quick Flow** — `/implement` won't run without it. The shortcut flow: skip `/clarify` and `/analyze`, but never `/tasks`.
+
+**7. Spec-kit leans on advanced agent features**: skills mode (Claude/Codex), sub-agent dispatch in the research phase, parallel `[P]` markers in `/implement`. See `SPEC-KIT-docs.md`, section 8.6.
+
+**8. Team adoption is incremental, not "everyone switches Monday."** Champion pilot → showcase → constitution drafting → team pilot → standard. The plan is in `SCRUM_INTEGRATION.md`.
+
+---
+
+## What's next — for solo learners
+
+After finishing the course:
+
+- Adapt `constitution.md` for your own team — use `CONSTITUTION_GUIDE.md` as a process template.
+- Build an **internal template** spec-kit project with your constitution and an example spec.md — new repos start in 5 minutes.
+- Wire `/speckit.taskstoissues` to Jira/Linear via MCP or your own script.
+- Run a workshop on this curriculum for the rest of the team.
+
+## What's next — for the team's tech lead
+
+- Champion pilot → showcase → drafting workshop → team pilot (the plan lives in `SCRUM_INTEGRATION.md`, section "How to roll SDD out to a team").
+- Set up the grooming/planning/retro rituals per `SCRUM_INTEGRATION.md`.
+- After 1 quarter — first `SPECS_HYGIENE.md` ritual (archival + index).
+
+---
+
+> **Questions and feedback**: keep the course repository alive — add your own scenarios, raise the bar on tasks, capture your own best practices.

@@ -1,47 +1,47 @@
-# SPEC-KIT WORKFLOW GUIDE — Наскрізне проходження SDD-2
+# SPEC-KIT WORKFLOW GUIDE — End-to-End Walkthrough of SDD-2
 
-> Цей документ показує **повний цикл** spec-kit на одній задачі: **SDD-2: Search & Filter** (пошук items по полю `title` з debounce та лічильником).
+> This document shows the **full spec-kit cycle** on a single task: **SDD-2: Search & Filter** (search items by `title` field with debounce and a counter).
 
-Послідовно пройдемо: `/speckit.constitution` → `/speckit.specify` → `/speckit.clarify` → `/speckit.plan` → `/speckit.tasks` → `/speckit.analyze` → `/speckit.implement`.
+We will go through, in order: `/speckit.constitution` → `/speckit.specify` → `/speckit.clarify` → `/speckit.plan` → `/speckit.tasks` → `/speckit.analyze` → `/speckit.implement`.
 
-Після кожної команди — пояснення *що сталось*, *який артефакт зʼявився*, *на що звернути увагу*.
-
----
-
-## 0. Передумови
-
-- ✅ Виконали `PROJECT_SETUP.md` — тренувальний проект запущено.
-- ✅ Spec-kit ініціалізовано (`specify init . --integration <agent>`).
-- ✅ Slash-команди працюють у редакторі.
-
-Ми у директорії `full-stack-fastapi-template/` на гілці `main`.
+After each command — an explanation of *what happened*, *which artifact appeared*, *what to pay attention to*.
 
 ---
 
-## Крок 1 — `/speckit.constitution` (один раз на проект)
+## 0. Prerequisites
 
-Будь-який реальний проект починається з конституції. Якщо вона вже є — пропускайте крок.
+- ✅ You have completed `PROJECT_SETUP.md` — the training project is up and running.
+- ✅ Spec-kit is initialized (`specify init . --integration <agent>`).
+- ✅ Slash commands work in your editor.
 
-### Промпт
+We are inside the `full-stack-fastapi-template/` directory on the `main` branch.
+
+---
+
+## Step 1 — `/speckit.constitution` (once per project)
+
+Any real project starts with a constitution. If one already exists — skip this step.
+
+### Prompt
 
 ```
-/speckit.constitution Створи принципи для нашого тренувального проекту:
-1. Test-First для backend (pytest, мінімум 70% coverage на нові модулі)
-2. Type safety: Python 3.11+ з pydantic, TypeScript strict у frontend
-3. API-First: усі нові endpoints мають OpenAPI-схему до коду
-4. Observability: structured logging через structlog, trace IDs у запитах
+/speckit.constitution Create principles for our training project:
+1. Test-First for backend (pytest, minimum 70% coverage on new modules)
+2. Type safety: Python 3.11+ with pydantic, TypeScript strict in frontend
+3. API-First: every new endpoint must have an OpenAPI schema before code
+4. Observability: structured logging via structlog, trace IDs in requests
 5. Performance: backend p95 < 300ms, frontend FCP < 1.5s
-6. Simplicity: не додавати залежностей, які можна замінити stdlib
+6. Simplicity: do not add dependencies that can be replaced by stdlib
 
 Governance:
-- Принципи MUST-рівня змінюються тільки через RFC + 1 review
+- MUST-level principles change only via RFC + 1 review
 - Constitution version: semver (MAJOR breaking, MINOR new principle, PATCH wording)
-- Compliance перевіряти у /speckit.plan через Constitution Check gate
+- Compliance is checked in /speckit.plan via the Constitution Check gate
 ```
 
-### Що генерує агент
+### What the agent generates
 
-Файл `.specify/memory/constitution.md`:
+The file `.specify/memory/constitution.md`:
 
 ```markdown
 ---
@@ -78,46 +78,46 @@ Constitution Check gate runs in /speckit.plan before Phase 0 and after Phase 1.
 Violations must be either resolved or justified in plan.md → Complexity Tracking.
 ```
 
-### На що звернути увагу
+### What to pay attention to
 
-- `Sync Impact Report` у HTML-коментарі вгорі — підказує, які шаблони міг зачепити апдейт.
-- `version` — bump-ається при кожному `/speckit.constitution`.
-- Кожен принцип має **rationale** і **rule** (а не загальні гасла).
+- The `Sync Impact Report` in the HTML comment at the top — it hints which templates the update may have affected.
+- `version` — bumped on every `/speckit.constitution`.
+- Each principle has a **rationale** and a **rule** (not generic slogans).
 
-> 💡 **Практичне правило**: конституція — це обмежувальний документ, а не маркетинг. Якщо принцип не можна перевірити в `Constitution Check`, він зайвий.
+> 💡 **Practical rule**: the constitution is a constraints document, not marketing. If a principle cannot be checked in `Constitution Check`, it is unnecessary.
 
 ---
 
-## Крок 2 — `/speckit.specify` (опис фічі)
+## Step 2 — `/speckit.specify` (Describing the Feature)
 
-### Промпт
+### Prompt
 
 ```
-/speckit.specify Реалізуй пошук та фільтрацію items.
+/speckit.specify Implement search and filtering for items.
 
-Користувач у списку items бачить поле пошуку. Коли вводить текст —
-список фільтрується по полю title (часткове співпадіння, регістронезалежно).
+In the items list the user sees a search field. When they type —
+the list is filtered by the title field (partial match, case-insensitive).
 
-Пошук має debounce 300ms — запит до API відправляється тільки після
-зупинки введення. Поверх таблиці зʼявляється текст "Found N items"
-де N — кількість результатів.
+The search has a 300ms debounce — the API request is sent only after
+typing stops. Above the table the text "Found N items" appears
+where N is the number of results.
 
-Користувач має змогу очистити пошук кнопкою "X" або натисканням Esc.
+The user can clear the search via an "X" button or by pressing Esc.
 
-Коли поле порожнє — показуються всі items (як зараз). Коли результатів
-немає — показується пустий стан з повідомленням.
+When the field is empty — all items are shown (as today). When there
+are no results — an empty state with a message is shown.
 ```
 
-### Що генерує агент
+### What the agent generates
 
-Створює:
-- branch `002-search-and-filter` (через hook)
-- директорію `specs/002-search-and-filter/`
-- файл `specs/002-search-and-filter/spec.md`
-- файл `specs/002-search-and-filter/checklists/requirements.md`
-- оновлює `.specify/feature.json`
+It creates:
+- branch `002-search-and-filter` (via a hook)
+- the directory `specs/002-search-and-filter/`
+- the file `specs/002-search-and-filter/spec.md`
+- the file `specs/002-search-and-filter/checklists/requirements.md`
+- updates `.specify/feature.json`
 
-### Приклад згенерованого `spec.md`
+### Example of the generated `spec.md`
 
 ```markdown
 # Feature Specification: Search and Filter Items
@@ -196,7 +196,7 @@ count is shown above the table.
 - Server-side full-text indexing (PostgreSQL `tsvector`).
 ```
 
-### `checklists/requirements.md` (auto-згенерований)
+### `checklists/requirements.md` (auto-generated)
 
 ```markdown
 # Requirements Quality Checklist
@@ -211,31 +211,31 @@ count is shown above the table.
 - [ ] Out-of-scope items listed
 ```
 
-### На що звернути увагу
+### What to pay attention to
 
-- 🚫 У спеці **немає** жодного слова про FastAPI, React, SQL — тільки `title`, `items list`, `endpoint` загалом.
-- ✅ Є один маркер `[NEEDS CLARIFICATION: should filter persist across page reload?]` — нижче `/clarify` його обробить.
-- ✅ Success criteria — вимірювані (`<3 seconds`, `<500ms p95`).
+- 🚫 The spec has **no** mention of FastAPI, React, or SQL — only `title`, `items list`, and `endpoint` in general terms.
+- ✅ There is one `[NEEDS CLARIFICATION: should filter persist across page reload?]` marker — `/clarify` below will handle it.
+- ✅ Success criteria are measurable (`<3 seconds`, `<500ms p95`).
 
 ---
 
-## Крок 3 — `/speckit.clarify` (зменшення двозначностей)
+## Step 3 — `/speckit.clarify` (Reducing Ambiguity)
 
-### Промпт
+### Prompt
 
 ```
 /speckit.clarify
 ```
 
-### Що робить агент
+### What the agent does
 
-Сканує спеку за 11 категоріями ambiguity. Знаходить, що:
+It scans the spec across 11 ambiguity categories. It finds that:
 
-1. Не визначено, чи фільтр зберігається при reload (з `[NEEDS CLARIFICATION]`).
-2. Не визначено, як вести себе при втраті фокусу під час debounce.
-3. Не визначено, чи зачіпає це Story 3 (empty state) з whitespace-only query.
+1. It is not defined whether the filter persists on reload (from `[NEEDS CLARIFICATION]`).
+2. It is not defined how to behave when focus is lost during the debounce.
+3. It is not defined whether this affects Story 3 (empty state) for a whitespace-only query.
 
-Задає **по одному питанню за раз**:
+It asks **one question at a time**:
 
 ```
 **Q1**: Should the search query persist across page reload?
@@ -253,7 +253,7 @@ lists; URL approach is also testable.
 Reply: Q1: A
 ```
 
-Користувач відповідає `Q1: A`. Агент негайно оновлює `spec.md` — додає секцію `## Clarifications` і пропагує відповідь у Functional Requirements:
+The user replies `Q1: A`. The agent immediately updates `spec.md` — adding a `## Clarifications` section and propagating the answer into Functional Requirements:
 
 ```markdown
 ## Clarifications
@@ -267,7 +267,7 @@ Reply: Q1: A
   → A: Treat as empty (trim before debounce)
 ```
 
-І в розділі Functional Requirements:
+And in the Functional Requirements section:
 
 ```diff
 - **FR-004**: System MUST preserve filter state across pagination.
@@ -278,48 +278,48 @@ Reply: Q1: A
 + **FR-006**: System MUST trim whitespace before processing query.
 ```
 
-### На що звернути увагу
+### What to pay attention to
 
-- Кожна відповідь — **відразу** в spec.md (атомарний overwrite).
-- Маркер `[NEEDS CLARIFICATION]` зник.
-- Rationale прокидаються в FR — нічого не лишається тільки в `## Clarifications`.
+- Each answer goes **immediately** into spec.md (atomic overwrite).
+- The `[NEEDS CLARIFICATION]` marker is gone.
+- Rationales are propagated into FRs — nothing is left only in `## Clarifications`.
 
-> 💡 **Практичне правило**: ніколи не давайте `Custom`-відповіді довжиною > 5 слів. Якщо потрібен довгий відповідь — це означає, що питання погано сформоване, і треба переробити спеку вручну.
+> 💡 **Practical rule**: never give a `Custom` answer longer than 5 words. If a long answer is needed, the question is poorly worded and the spec needs a manual rework.
 
 ---
 
-## Крок 4 — `/speckit.plan` (технічний план)
+## Step 4 — `/speckit.plan` (Technical Plan)
 
-### Промпт
+### Prompt
 
 ```
 /speckit.plan
-Backend: розширити existing FastAPI endpoint GET /api/v1/items
-параметром `q: Optional[str]`. Реалізація через SQLModel: WHERE LOWER(title) LIKE LOWER(:q).
-PostgreSQL ILIKE для регістронезалежності.
+Backend: extend the existing FastAPI endpoint GET /api/v1/items
+with a `q: Optional[str]` parameter. Implementation via SQLModel:
+WHERE LOWER(title) LIKE LOWER(:q). PostgreSQL ILIKE for case-insensitivity.
 
-Frontend: React component SearchBar з useDebouncedValue (custom hook,
-300ms). Інтеграція з TanStack Query через queryKey ['items', q, page].
-URL sync через react-router useSearchParams.
+Frontend: React component SearchBar with useDebouncedValue (custom hook,
+300ms). Integration with TanStack Query via queryKey ['items', q, page].
+URL sync via react-router useSearchParams.
 
-Тести:
-- pytest: тестуй ILIKE query і escape special chars
-- Playwright: e2e сценарій типування і перевірки лічильника
+Tests:
+- pytest: test ILIKE query and escape special chars
+- Playwright: e2e scenario typing and verifying the counter
 
-Без додаткових бібліотек. Не використовуй PostgreSQL tsvector у цьому MVP.
+No additional libraries. Do not use PostgreSQL tsvector in this MVP.
 ```
 
-### Що генерує агент
+### What the agent generates
 
-Створює:
+It creates:
 - `specs/002-search-and-filter/plan.md`
 - `specs/002-search-and-filter/research.md`
 - `specs/002-search-and-filter/data-model.md`
 - `specs/002-search-and-filter/contracts/items-api.yaml`
 - `specs/002-search-and-filter/quickstart.md`
-- Оновлює `CLAUDE.md` (між `<!-- SPECKIT START -->` і `<!-- SPECKIT END -->`)
+- Updates `CLAUDE.md` (between `<!-- SPECKIT START -->` and `<!-- SPECKIT END -->`)
 
-### Приклад `plan.md`
+### Example `plan.md`
 
 ```markdown
 # Implementation Plan: Search and Filter Items
@@ -372,7 +372,7 @@ frontend/tests/e2e/search.spec.ts      # new
 |                                  | follow-up: add `pg_trgm` GIN index in v2 |
 ```
 
-### Приклад `research.md` (фрагмент)
+### Example `research.md` (excerpt)
 
 ```markdown
 # Research
@@ -399,7 +399,7 @@ frontend/tests/e2e/search.spec.ts      # new
 - **Alternatives**: nuqs (deferred to wider state-management RFC).
 ```
 
-### Приклад `data-model.md`
+### Example `data-model.md`
 
 ```markdown
 # Data Model — Search & Filter
@@ -418,7 +418,7 @@ No schema changes required.
 - Search query `q`: max 200 chars, trimmed, special chars escaped server-side.
 ```
 
-### Приклад `contracts/items-api.yaml`
+### Example `contracts/items-api.yaml`
 
 ```yaml
 paths:
@@ -456,7 +456,7 @@ components:
         page_size: { type: integer }
 ```
 
-### Приклад `quickstart.md`
+### Example `quickstart.md`
 
 ```markdown
 # Quickstart — Manual Validation
@@ -479,30 +479,30 @@ components:
    ✅ Expect search field pre-filled with "test", filtered list, counter shown.
 ```
 
-### На що звернути увагу
+### What to pay attention to
 
-- **Constitution Check** — два прогони (Phase 0 і Phase 1). Виявив `Performance ⚠️` для ILIKE без індексу — задокументовано в Complexity Tracking.
-- **research.md** — кожне рішення з Decision / Rationale / Alternatives. Це блокує impulsive choices.
-- **contracts/** — оновлений OpenAPI ще *до* написання коду.
-- **quickstart.md** — це «definition of done» для людини. Якщо QA / PM хоче ручною перевіркою — починає звідси.
+- **Constitution Check** runs twice (Phase 0 and Phase 1). It flagged `Performance ⚠️` for ILIKE without an index — documented in Complexity Tracking.
+- **research.md** — every decision has Decision / Rationale / Alternatives. This blocks impulsive choices.
+- **contracts/** — the OpenAPI is updated *before* any code is written.
+- **quickstart.md** — this is the "definition of done" for a human. If QA / PM wants to verify by hand — they start here.
 
-> 💡 **Лайфхак**: після `/plan` запитайте агента: «Глянь по плану і знайди області, де потрібно додаткове research щодо актуальних версій бібліотек. Запусти паралельні research tasks і онови `research.md`».
+> 💡 **Tip**: after `/plan`, ask the agent: "Look at the plan and find areas that need additional research on current library versions. Run parallel research tasks and update `research.md`".
 
 ---
 
-## Крок 5 — `/speckit.tasks` (декомпозиція)
+## Step 5 — `/speckit.tasks` (Decomposition)
 
-### Промпт
+### Prompt
 
 ```
 /speckit.tasks
 ```
 
-(Без аргументів — команда читає plan.md, spec.md, contracts/, data-model.md.)
+(No arguments — the command reads plan.md, spec.md, contracts/, data-model.md.)
 
-### Що генерує
+### What it generates
 
-Файл `specs/002-search-and-filter/tasks.md`:
+The file `specs/002-search-and-filter/tasks.md`:
 
 ```markdown
 # Tasks — Search and Filter
@@ -556,28 +556,28 @@ components:
 - [ ] T022 Update OpenAPI snapshot in CHANGELOG.md
 ```
 
-### Структурні особливості
+### Structural details
 
-- **Phase 2 (Foundational)** — блокує всі stories. Без неї frontend не зможе викликати API з `q`.
-- **Story 1 (P1)** = MVP. Завершивши Phase 3, ви вже маєте робочу фічу пошуку. Story 2 і 3 — поліпшення UX.
-- `[P]` маркери — задачі, які можна гнати паралельно (різні файли).
-- Кожна задача має **точний шлях до файлу**.
+- **Phase 2 (Foundational)** blocks all stories. Without it, the frontend cannot call the API with `q`.
+- **Story 1 (P1)** = MVP. Once Phase 3 is finished, you already have a working search feature. Stories 2 and 3 are UX improvements.
+- `[P]` markers — tasks that can run in parallel (different files).
+- Every task has the **exact file path**.
 
-### На що звернути увагу
+### What to pay attention to
 
-> ⚠️ **Не міняйте формат руками**. Spec-kit жорстко парсить `[ ] T001`, `[P]`, `[US1]`. Якщо порушите — `/implement` пропустить задачу.
+> ⚠️ **Do not edit the format by hand**. Spec-kit strictly parses `[ ] T001`, `[P]`, `[US1]`. If you break it — `/implement` will skip the task.
 
 ---
 
-## Крок 6 — `/speckit.analyze` (cross-artifact аудит)
+## Step 6 — `/speckit.analyze` (Cross-Artifact Audit)
 
-### Промпт
+### Prompt
 
 ```
 /speckit.analyze
 ```
 
-### Що повертає
+### What it returns
 
 ```markdown
 # Cross-Artifact Analysis Report
@@ -627,12 +627,12 @@ None.
 3. Make F-001 explicit by adding test "fires on blur".
 ```
 
-### Що з цим робити
+### What to do with this
 
-- **CRITICAL** = блокер, виправіть перед `/implement`.
-- **MEDIUM/LOW** — краще виправити, але можна продовжити.
+- **CRITICAL** = blocker, fix before `/implement`.
+- **MEDIUM/LOW** — better fixed, but you can keep going.
 
-У нашому випадку додаємо до `tasks.md`:
+In our case we add the following to `tasks.md`:
 
 ```markdown
 - [ ] T023 [US1] Add backend trim of `q` parameter (strip whitespace) in
@@ -642,25 +642,25 @@ None.
 - [ ] T025 [P] [US1] Playwright test "search fires on blur during debounce"
 ```
 
-Запускаємо `/speckit.analyze` ще раз — Coverage 100%, нема Findings.
+Run `/speckit.analyze` again — Coverage is 100%, no Findings.
 
-> 💡 **Практичне правило**: `/analyze` — це *безкоштовний* лінтер для специфікації. Запускайте його щоразу після значних змін.
+> 💡 **Practical rule**: `/analyze` is a *free* linter for the specification. Run it every time after significant changes.
 
 ---
 
-## Крок 7 — `/speckit.implement`
+## Step 7 — `/speckit.implement`
 
-### Промпт
+### Prompt
 
 ```
 /speckit.implement
 ```
 
-### Що робить агент
+### What the agent does
 
-1. **Перевіряє checklists/** — `requirements.md` усе ✅, можна йти далі.
-2. **Оновлює ignore-файли** — `.gitignore` нічого не змінює (вже актуальний для Python+Node).
-3. **Виконує задачі по фазах:**
+1. **Checks the checklists/** — `requirements.md` is all ✅, we can proceed.
+2. **Updates ignore files** — `.gitignore` needs no changes (already valid for Python+Node).
+3. **Executes tasks phase by phase:**
 
 ```
 [Phase 1] T001, T002 (parallel) — installing playwright...
@@ -699,13 +699,13 @@ Final validation against spec.md:
 Implementation complete.
 ```
 
-4. **Маркує `[X]` у tasks.md** після кожної задачі.
+4. **Marks `[X]` in tasks.md** after each task.
 
-### На що звернути увагу
+### What to pay attention to
 
-- Агент **зупиняється**, якщо non-parallel задача провалюється (наприклад, тест не пройшов після imple).
-- Parallel `[P]` задачі продовжують виконуватись навіть якщо одна впала — звітує наприкінці.
-- Усі зміни — у git working tree, **не коммітяться автоматично**. Подальший workflow:
+- The agent **stops** if a non-parallel task fails (for example, a test fails after implementation).
+- Parallel `[P]` tasks keep running even if one fails — it reports at the end.
+- All changes live in the git working tree, **not committed automatically**. The follow-up workflow:
 
 ```bash
 git status
@@ -720,34 +720,34 @@ gh pr create --title "feat(items): search and filter" \
   --body "$(cat specs/002-search-and-filter/quickstart.md)"
 ```
 
-> 💡 **Практичне правило**: PR має містити лінк на `specs/<feature>/` як основний source of truth. Code review починається зі spec.md, не з diff коду.
+> 💡 **Practical rule**: the PR must contain a link to `specs/<feature>/` as the primary source of truth. Code review starts from spec.md, not from the code diff.
 
 ---
 
-## Звіт за весь воркфлоу
+## Workflow Summary
 
-| Крок | Час | Що отримали |
-|------|-----|-------------|
-| `/constitution` | 15 хв | `.specify/memory/constitution.md` v1.0.0 |
-| `/specify` | 10 хв | `spec.md` із 3 user stories, 4 FR, 3 SC |
-| `/clarify` | 10 хв | 3 питання → spec доповнено `## Clarifications` |
-| `/plan` | 20 хв | `plan.md`, `research.md`, `data-model.md`, `contracts/`, `quickstart.md` |
-| `/tasks` | 5 хв | 22 задачі за фазами |
-| `/analyze` | 5 хв | Findings → +3 задачі (T023–T025) |
-| `/implement` | 60–120 хв | Робочий код + тести + e2e |
-| **Всього** | **~3 год** | Готова фіча з повною документацією |
+| Step | Time | What you got |
+|------|------|--------------|
+| `/constitution` | 15 min | `.specify/memory/constitution.md` v1.0.0 |
+| `/specify` | 10 min | `spec.md` with 3 user stories, 4 FRs, 3 SCs |
+| `/clarify` | 10 min | 3 questions → spec extended with `## Clarifications` |
+| `/plan` | 20 min | `plan.md`, `research.md`, `data-model.md`, `contracts/`, `quickstart.md` |
+| `/tasks` | 5 min | 22 tasks across phases |
+| `/analyze` | 5 min | Findings → +3 tasks (T023–T025) |
+| `/implement` | 60–120 min | Working code + tests + e2e |
+| **Total** | **~3 hr** | A finished feature with full documentation |
 
-> 💡 **Порівняння з vibe coding**: ту саму фічу можна було б написати за 1 годину «з голови». Але:
-> - Не було б тестів (або були б фіктивні).
-> - Не було б URL state (забули б).
-> - Не було б perf-тесту.
-> - Через місяць треба буде розбиратися «що тут робиться» — без spec.md це довго.
-> - Code review був би ad-hoc — без quickstart.md і data-model.md ревʼюер втратить 30 хв на контекст.
+> 💡 **Compared to vibe coding**: the same feature could be written in 1 hour "off the top of your head". But:
+> - There would be no tests (or fake ones).
+> - There would be no URL state (it would be forgotten).
+> - There would be no perf test.
+> - In a month you would have to figure out "what is going on here" — without spec.md that takes a long time.
+> - Code review would be ad-hoc — without quickstart.md and data-model.md the reviewer loses 30 minutes just to gain context.
 
 ---
 
-## Що далі
+## What's next
 
-- **Тренування**: повторіть цей самий цикл для **SDD-1 (Tags)** — складність трохи вища, бо є нова таблиця і M2M.
-- **Поглиблення**: спробуйте **SDD-7 (Activity Log)** — Hard. Потрібен middleware, audit trail, агрегації.
-- **Командна робота**: пройдіть `SPEC_KIT_USE_CASES.md` сценарії 5 (Team Collaboration) і 6 (Greenfield).
+- **Practice**: repeat the same cycle for **SDD-1 (Tags)** — slightly higher complexity because of a new table and an M2M.
+- **Going deeper**: try **SDD-7 (Activity Log)** — Hard. Requires middleware, an audit trail, and aggregations.
+- **Team work**: walk through scenarios 5 (Team Collaboration) and 6 (Greenfield) in `SPEC_KIT_USE_CASES.md`.

@@ -1,124 +1,124 @@
-# SPEC-KIT — Довідник методології та інструменту
+# SPEC-KIT — Methodology and Tooling Reference
 
-> Цей документ — *теоретична* база курсу. Прочитайте його повністю перед тим, як братися за `SPEC_KIT_WORKFLOW_GUIDE.md`. Без розуміння філософії всі команди виглядатимуть як «зайва бюрократія».
+> This document is the *theoretical* foundation of the course. Read it in full before tackling `SPEC_KIT_WORKFLOW_GUIDE.md`. Without grasping the philosophy, all the commands will look like "extra bureaucracy".
 
 ---
 
-## 1. Що таке Spec-Driven Development
+## 1. What Spec-Driven Development is
 
-**Spec-Driven Development (SDD)** — методологія розробки з AI-асистентами, у якій **специфікація** є основним артефактом, а код — *результатом* специфікації.
+**Spec-Driven Development (SDD)** — a methodology for building software with AI assistants in which the **specification** is the primary artifact, and code is the *result* of the specification.
 
 > ❝ Code used to be king. In SDD, **code serves specifications**. ❞
-> — `spec-driven.md`, репозиторій github/spec-kit
+> — `spec-driven.md`, github/spec-kit repository
 
-### Принципи
+### Principles
 
-| Принцип | Що означає на практиці |
-|---------|------------------------|
-| **Specifications as lingua franca** | Спека — джерело правди. Не PRD у Confluence, не ticket в Jira, а конкретний файл `spec.md` у репозиторії. |
-| **Executable specifications** | Спека має бути настільки точною, щоб з неї можна було згенерувати робочий код. Жодних розмитих формулювань. |
-| **Continuous refinement** | Validation працює *постійно*, а не один раз при kickoff. |
-| **Research-driven context** | AI-агент сам збирає інформацію про залежності, performance, security → `research.md`. |
-| **Bidirectional feedback** | Production-метрики повертаються в специфікацію, спека еволюціонує. |
-| **Branching for exploration** | Можна паралельно мати кілька реалізацій однієї специфікації. |
+| Principle | What it means in practice |
+|-----------|---------------------------|
+| **Specifications as lingua franca** | The spec is the source of truth. Not a PRD in Confluence, not a Jira ticket — a concrete `spec.md` file in the repository. |
+| **Executable specifications** | The spec must be precise enough that working code can be generated from it. No vague wording. |
+| **Continuous refinement** | Validation runs *continuously*, not once at kickoff. |
+| **Research-driven context** | The AI agent gathers information about dependencies, performance, security on its own → `research.md`. |
+| **Bidirectional feedback** | Production metrics feed back into the specification, and the spec evolves. |
+| **Branching for exploration** | You can have several implementations of the same specification in parallel. |
 
 ---
 
-## 2. Чим SDD відрізняється від інших підходів
+## 2. How SDD differs from other approaches
 
 ### Vibe Coding
 
-> «Кинув промпт у GPT/Claude — отримав код — закомітив».
+> "Threw a prompt at GPT/Claude — got code — committed it".
 
-| Властивість | Vibe Coding | SDD |
-|-------------|-------------|-----|
-| Артефакт | Тільки код | Спека → план → задачі → код |
-| Передбачуваність | Низька | Висока |
-| Рефакторинг | Знову промптити з нуля | Змінити спеку → регенерувати |
-| Документація | Відсутня | Є за замовчуванням |
-| Code review | Дивляться код | Дивляться спеку *і* код |
+| Property | Vibe Coding | SDD |
+|----------|-------------|-----|
+| Artifact | Code only | Spec → plan → tasks → code |
+| Predictability | Low | High |
+| Refactoring | Re-prompt from scratch | Change the spec → regenerate |
+| Documentation | Missing | Built in by default |
+| Code review | Looks at the code | Looks at the spec *and* the code |
 
-### Класичний waterfall / PRD-first
+### Classic waterfall / PRD-first
 
-| Властивість | PRD-first | SDD |
-|-------------|-----------|-----|
-| PRD оновлюється? | Раз і викидається | Живий артефакт у git |
-| Drift між docs і code | Завжди | Усувається тим, що PRD генерує код |
-| Хто пише PRD | PM/BA | Інженер + AI з checklists |
-| Тестованість вимог | Часто `[NEEDS CLARIFICATION]` | Шаблон забороняє цього |
+| Property | PRD-first | SDD |
+|----------|-----------|-----|
+| Is the PRD updated? | Once, then thrown away | A living artifact in git |
+| Drift between docs and code | Always | Eliminated by having the PRD generate the code |
+| Who writes the PRD | PM/BA | Engineer + AI with checklists |
+| Are requirements testable? | Often `[NEEDS CLARIFICATION]` | The template forbids it |
 
-### Які проблеми SDD вирішує
+### Which problems SDD solves
 
-1. **Drift між специфікацією і кодом** — її просто немає, бо спека генерує код.
-2. **AI-галюцинації** — шаблон вимагає явних `[NEEDS CLARIFICATION]` маркерів замість «правдоподібних» здогадів.
-3. **Over-engineering** — є `Constitution Check` gates, які блокують надлишкову складність.
-4. **Дешеві pivot-и** — змінили вимогу → перегенерували `plan.md` і `tasks.md`, замість переписувати код.
-5. **Brownfield-розробка** — додавання фічі в існуючий код стає керованим, бо спека описує інтеграцію з існуючою архітектурою.
+1. **Drift between specification and code** — there's simply none, because the spec generates the code.
+2. **AI hallucinations** — the template requires explicit `[NEEDS CLARIFICATION]` markers instead of "plausible-looking" guesses.
+3. **Over-engineering** — `Constitution Check` gates block excess complexity.
+4. **Cheap pivots** — change a requirement → regenerate `plan.md` and `tasks.md` instead of rewriting code.
+5. **Brownfield development** — adding a feature to an existing codebase becomes manageable, because the spec describes integration with the existing architecture.
 
 ---
 
-## 3. Архітектура spec-kit
+## 3. Spec-kit architecture
 
-Spec-kit складається з двох частин:
+Spec-kit consists of two parts:
 
-### 3.1. CLI `specify`
+### 3.1. The `specify` CLI
 
-Python-додаток, який:
+A Python application that:
 
-- Створює `.specify/` директорію зі скриптами і шаблонами.
-- Конфігурує інтеграцію з обраним AI-агентом (≥30 підтримуваних).
-- Реєструє slash-команди.
+- Creates the `.specify/` directory with scripts and templates.
+- Configures integration with the chosen AI agent (≥30 supported).
+- Registers slash commands.
 
-### 3.2. Бібліотека шаблонів і промптів
+### 3.2. A library of templates and prompts
 
-Усі команди — це markdown-файли в `.specify/templates/commands/`, які AI-агент читає і виконує. Шаблони містять:
+All commands are markdown files in `.specify/templates/commands/` that the AI agent reads and executes. The templates contain:
 
-- Структуру файлів спеки/плану/задач (placeholder slots).
-- **Guard rails** — заборону згадувати стек у спеці, обмеження кількості `[NEEDS CLARIFICATION]`, обовʼязковість вимірюваних success criteria.
-- Інструкції AI-агенту (як ставити уточнюючі питання, як заповнювати таблиці тощо).
+- Spec/plan/tasks file structure (placeholder slots).
+- **Guard rails** — banning stack mentions in the spec, capping the number of `[NEEDS CLARIFICATION]` markers, requiring measurable success criteria.
+- Instructions for the AI agent (how to ask clarifying questions, how to fill in tables, etc.).
 
-### 3.3. Підтримувані агенти (на момент v0.8.1)
+### 3.3. Supported agents (as of v0.8.1)
 
-| Ключ | Агент |
-|------|-------|
-| `claude` | Claude Code (skills mode за замовчуванням) |
+| Key | Agent |
+|-----|-------|
+| `claude` | Claude Code (skills mode by default) |
 | `copilot` | GitHub Copilot (IDE + CLI) |
 | `cursor-agent` | Cursor |
 | `gemini` | Gemini CLI |
 | `codex` | OpenAI Codex CLI (skills) |
 | `windsurf` | Windsurf |
 | `qwen` | Qwen Code |
-| `opencode`, `goose`, `kiro-cli`, `tabnine`, `vibe`, `forge`, `pi`, `qodercli`, ... | Інші 20+ |
-| `generic` | Будь-який кастомний агент через `--commands-dir` |
+| `opencode`, `goose`, `kiro-cli`, `tabnine`, `vibe`, `forge`, `pi`, `qodercli`, ... | 20+ others |
+| `generic` | Any custom agent via `--commands-dir` |
 
-> 💡 У Codex CLI skills-режимі префікс команд **`$speckit-*`** (з доларом), а не `/speckit.*`.
+> 💡 In Codex CLI skills mode, the command prefix is **`$speckit-*`** (with a dollar sign), not `/speckit.*`.
 
 ---
 
-## 4. Команди (slash commands) — Reference
+## 4. Commands (slash commands) — Reference
 
-Усі команди викликаються **в чаті AI-агента**, не в shell.
+All commands are invoked **in the AI agent chat**, not in the shell.
 
-### 4.1. `/speckit.constitution` — Принципи проекту
+### 4.1. `/speckit.constitution` — Project principles
 
-Створює/оновлює `.specify/memory/constitution.md`.
+Creates/updates `.specify/memory/constitution.md`.
 
-**Що генерує:** документ із принципами (Library-First, Test-First, Observability, Simplicity тощо), governance-правилами та semver-версією.
+**What it generates:** a document with principles (Library-First, Test-First, Observability, Simplicity, etc.), governance rules, and a semver version.
 
-**Коли викликати:**
-- Один раз при старті проекту.
-- Коли змінюються командні стандарти (тоді bumps версію: MAJOR/MINOR/PATCH).
+**When to invoke:**
+- Once at project start.
+- When team standards change (then bump the version: MAJOR/MINOR/PATCH).
 
-**Приклад:**
+**Example:**
 
 ```
-/speckit.constitution Створи принципи: code quality (80%+ test coverage),
-TDD для core domain, UX consistency через Figma design system,
-performance <200ms p95. Governance: MUST-принципи змінюються тільки
-через RFC + 2 review.
+/speckit.constitution Create principles: code quality (80%+ test coverage),
+TDD for the core domain, UX consistency via the Figma design system,
+performance <200ms p95. Governance: MUST principles are changed only
+through RFC + 2 reviews.
 ```
 
-**Артефакт:** `.specify/memory/constitution.md` із frontmatter:
+**Artifact:** `.specify/memory/constitution.md` with frontmatter:
 
 ```markdown
 ---
@@ -132,82 +132,82 @@ last_amended_date: 2026-04-28
 
 ### 4.2. `/speckit.specify` — WHAT and WHY
 
-Створює `specs/<NNN-feature-slug>/spec.md`.
+Creates `specs/<NNN-feature-slug>/spec.md`.
 
-**Поведінка:**
-- Генерує kebab-case slug (`001-photo-albums`, `002-search-filter`).
-- Створює git-branch (опційно через hook).
-- **Заборонено** згадувати стек/фреймворки/API в spec.md.
-- **Максимум 3 `[NEEDS CLARIFICATION]` маркери** (за пріоритетом: scope → security → UX → tech).
-- Auto-генерує `specs/<feature>/checklists/requirements.md` для self-validation.
+**Behavior:**
+- Generates a kebab-case slug (`001-photo-albums`, `002-search-filter`).
+- Creates a git branch (optionally via a hook).
+- **Forbids** mentioning stack/frameworks/APIs in spec.md.
+- **At most 3 `[NEEDS CLARIFICATION]` markers** (priority order: scope → security → UX → tech).
+- Auto-generates `specs/<feature>/checklists/requirements.md` for self-validation.
 
-**Приклад:**
+**Example:**
 
 ```
-/speckit.specify Додай у застосунок можливість групувати items по тегах.
-Користувач може створити тег, призначити кілька тегів одному item,
-відфільтрувати items по тегах. Теги унікальні per-user.
+/speckit.specify Add the ability to group items by tags to the application.
+A user can create a tag, assign multiple tags to one item, and filter items
+by tags. Tags are unique per user.
 ```
 
-**Артефакт `spec.md` містить:**
-- User Stories з пріоритетами P1/P2/P3
+**The `spec.md` artifact contains:**
+- User Stories with priorities P1/P2/P3
 - Functional Requirements (FR-001, FR-002, ...)
-- Success Criteria (вимірювані, technology-agnostic)
+- Success Criteria (measurable, technology-agnostic)
 - Edge Cases
-- Key Entities (description, не схема)
+- Key Entities (description, not schema)
 - Assumptions
 
 ---
 
-### 4.3. `/speckit.clarify` — Зменшення двозначностей
+### 4.3. `/speckit.clarify` — Reducing ambiguity
 
-Сканує `spec.md` за 11 категоріями (Functional Scope, Domain & Data Model, UX Flow, NFR, Integration, Edge Cases, Constraints, Terminology, Completion Signals, Misc).
+Scans `spec.md` across 11 categories (Functional Scope, Domain & Data Model, UX Flow, NFR, Integration, Edge Cases, Constraints, Terminology, Completion Signals, Misc).
 
-**Поведінка:**
-- Задає до **5 цілеспрямованих питань**, по одному за раз.
-- Кожне питання — multiple-choice (2–5 варіантів) або вільна відповідь ≤5 слів.
-- Один варіант помічено як **Recommended** з обґрунтуванням.
-- Після кожної відповіді негайно редагує spec.md (атомарний overwrite) і додає `## Clarifications / ### Session YYYY-MM-DD`.
+**Behavior:**
+- Asks up to **5 targeted questions**, one at a time.
+- Each question is multiple choice (2–5 options) or a free-form answer ≤5 words.
+- One option is marked as **Recommended** with justification.
+- After every answer, immediately edits spec.md (atomic overwrite) and adds `## Clarifications / ### Session YYYY-MM-DD`.
 
-**Приклад:**
+**Example:**
 
 ```
-/speckit.clarify Сфокусуйся на security і performance вимогах.
+/speckit.clarify Focus on security and performance requirements.
 ```
 
-> ⚠️ **Сильна рекомендація**: завжди запускайте `/speckit.clarify` перед `/speckit.plan`. Виняток — exploratory spike.
+> ⚠️ **Strong recommendation**: always run `/speckit.clarify` before `/speckit.plan`. The exception is an exploratory spike.
 
 ---
 
-### 4.4. `/speckit.plan` — Технічний план
+### 4.4. `/speckit.plan` — Technical plan
 
-Читає `spec.md` + `constitution.md`, генерує:
+Reads `spec.md` + `constitution.md`, generates:
 - `plan.md` — Technical Context, Constitution Check, Project Structure, Complexity Tracking
-- `research.md` — Decision / Rationale / Alternatives для кожного `[NEEDS CLARIFICATION]` і кожного нового технологічного вибору
+- `research.md` — Decision / Rationale / Alternatives for every `[NEEDS CLARIFICATION]` and every new technology choice
 - `data-model.md` — entities, fields, relationships, validation, state transitions
 - `contracts/` — API specs (OpenAPI), GraphQL, event schemas, CLI grammars
-- `quickstart.md` — сценарії ручної валідації (definition of done)
+- `quickstart.md` — manual validation scenarios (definition of done)
 
-**Constitution Check gates** виконуються двічі: до фази Research і після фази Design. Будь-яке порушення MUST-принципу — або виправляється, або обґрунтовується в **Complexity Tracking**.
+**Constitution Check gates** run twice: before the Research phase and after the Design phase. Any MUST principle violation must either be fixed or justified in **Complexity Tracking**.
 
-**Приклад:**
+**Example:**
 
 ```
 /speckit.plan Backend: FastAPI + SQLModel + Alembic + PostgreSQL.
 Frontend: React 18 + TypeScript + TanStack Query.
-Авторизація — існуючий JWT через FastAPI-Users.
-Тести — pytest + Playwright для e2e.
+Auth — existing JWT via FastAPI-Users.
+Tests — pytest + Playwright for e2e.
 ```
 
-> 💡 **Лайфхак**: після `/plan` запитайте агента: «Пройди по плану і знайди області, де потрібен additional research. Для кожної — запусти параллельну research task і онови `research.md` з конкретними версіями бібліотек».
+> 💡 **Tip**: after `/plan`, ask the agent: "Walk through the plan and find areas that need additional research. For each, dispatch a parallel research task and update `research.md` with concrete library versions".
 
 ---
 
-### 4.5. `/speckit.tasks` — Декомпозиція
+### 4.5. `/speckit.tasks` — Decomposition
 
-Читає plan.md, spec.md (user stories з P1/P2/P3), data-model.md, contracts/, research.md → генерує `tasks.md`.
+Reads plan.md, spec.md (user stories with P1/P2/P3), data-model.md, contracts/, research.md → generates `tasks.md`.
 
-**Жорсткий формат:**
+**Strict format:**
 
 ```markdown
 - [ ] T001 Create project structure per implementation plan
@@ -218,83 +218,83 @@ Frontend: React 18 + TypeScript + TanStack Query.
 ```
 
 - `T001` — sequential id
-- `[P]` — task можна виконувати паралельно (різні файли, немає dependencies)
-- `[US1]` — до якої user story належить (тільки в US-фазах)
-- Опис **обовʼязково містить шлях до файлу**
+- `[P]` — task can run in parallel (different files, no dependencies)
+- `[US1]` — which user story it belongs to (only in US phases)
+- The description **must contain the file path**
 
-**Структура фаз:**
+**Phase structure:**
 
 1. **Phase 1 — Setup** (project init, deps, lint)
-2. **Phase 2 — Foundational** (БЛОКУЄ всі stories — schema, auth, routing)
-3. **Phase 3+ — Per User Story** (P1, потім P2, потім P3) — кожна story = independent MVP increment
+2. **Phase 2 — Foundational** (BLOCKS all stories — schema, auth, routing)
+3. **Phase 3+ — Per User Story** (P1, then P2, then P3) — each story is an independent MVP increment
 4. **Final Phase — Polish** (docs, perf, security hardening)
 
-Кожна фаза закінчується **Checkpoint**-ом для незалежної валідації.
+Each phase ends with a **Checkpoint** for independent validation.
 
-> 💡 Тести **OPTIONAL** за замовчуванням. Якщо хочете TDD — попросіть агента у промпті: «Use TDD: write failing tests first».
-
----
-
-### 4.6. `/speckit.analyze` — Cross-artifact аудит (read-only)
-
-Виконується **між `/tasks` і `/implement`**. Не змінює файли.
-
-**Категорії перевірок:**
-- **A. Duplication** — близькі дублі вимог
-- **B. Ambiguity** — розмиті прикметники («швидкий», «масштабований»)
-- **C. Underspecification** — дієслова без вимірюваного результату
-- **D. Constitution alignment** — конфлікти з MUST-принципами (auto-CRITICAL)
-- **E. Coverage gaps** — вимоги без задач, задачі без вимог
-- **F. Inconsistency** — terminology drift, конфліктуючі tech choices
-
-**Output:** markdown-звіт з findings table (severity: CRITICAL / HIGH / MEDIUM / LOW), Coverage Summary, Metrics, Next Actions.
-
-> ⚠️ **CRITICAL знахідки = блокери**. Виправіть, перш ніж запускати `/implement`.
+> 💡 Tests are **OPTIONAL** by default. If you want TDD, ask the agent in the prompt: "Use TDD: write failing tests first".
 
 ---
 
-### 4.7. `/speckit.implement` — Виконання
+### 4.6. `/speckit.analyze` — Cross-artifact audit (read-only)
 
-**Поведінка:**
-- Перевіряє статус усіх checklist у `specs/<feature>/checklists/`. Якщо є incomplete — запитує підтвердження.
-- Генерує/оновлює `.gitignore`, `.dockerignore` тощо за detected stack.
-- Виконує задачі **по фазах**:
-  - Sequential там, де є dependencies
-  - Parallel для `[P]`-задач
-- Після кожної завершеної задачі — **ставить `[X]`** у tasks.md.
-- Halts при non-parallel failure.
-- В кінці — final validation проти спеки.
+Runs **between `/tasks` and `/implement`**. Does not modify files.
+
+**Check categories:**
+- **A. Duplication** — near-duplicate requirements
+- **B. Ambiguity** — vague adjectives ("fast", "scalable")
+- **C. Underspecification** — verbs without a measurable outcome
+- **D. Constitution alignment** — conflicts with MUST principles (auto-CRITICAL)
+- **E. Coverage gaps** — requirements without tasks, tasks without requirements
+- **F. Inconsistency** — terminology drift, conflicting tech choices
+
+**Output:** a markdown report with a findings table (severity: CRITICAL / HIGH / MEDIUM / LOW), Coverage Summary, Metrics, Next Actions.
+
+> ⚠️ **CRITICAL findings = blockers**. Fix them before running `/implement`.
 
 ---
 
-### 4.8. `/speckit.checklist` — Юніт-тести для англійської
+### 4.7. `/speckit.implement` — Execution
 
-Генерує domain-specific quality checklist, який валідує **сам текст вимог** (clarity, completeness, consistency, coverage, edge cases) — а не імплементацію.
+**Behavior:**
+- Verifies the status of every checklist in `specs/<feature>/checklists/`. If any are incomplete, asks for confirmation.
+- Generates/updates `.gitignore`, `.dockerignore`, etc. based on the detected stack.
+- Executes tasks **by phase**:
+  - Sequentially where there are dependencies
+  - In parallel for `[P]` tasks
+- After every completed task, **marks `[X]`** in tasks.md.
+- Halts on a non-parallel failure.
+- At the end — final validation against the spec.
 
-Задає до 3 уточнюючих питань, щоб налаштувати checklist під аудиторію (lightweight pre-commit / formal release gate).
+---
 
-**Приклад:**
+### 4.8. `/speckit.checklist` — Unit tests for English
+
+Generates a domain-specific quality checklist that validates **the requirement text itself** (clarity, completeness, consistency, coverage, edge cases) — not the implementation.
+
+Asks up to 3 clarifying questions to tune the checklist for the audience (lightweight pre-commit / formal release gate).
+
+**Example:**
 
 ```
-/speckit.checklist Сформуй UX checklist для перевірки spec.md
-з фокусом на accessibility і error states.
+/speckit.checklist Build a UX checklist to validate spec.md
+focused on accessibility and error states.
 ```
 
 ---
 
 ### 4.9. `/speckit.taskstoissues` — Tasks → GitHub Issues
 
-Через GitHub MCP створює один issue на кожну задачу з tasks.md. Перед створенням перевіряє, що remote-URL відповідає GitHub-репо (відмовиться синхронізувати в чужий repo).
+Via the GitHub MCP, creates one issue per task from tasks.md. Before creating, it checks that the remote URL points at a GitHub repo (it will refuse to sync to an unrelated repo).
 
 ---
 
-## 5. Артефакти — повна структура
+## 5. Artifacts — full structure
 
 ```
 .
 ├── .specify/
 │   ├── memory/
-│   │   └── constitution.md          # Принципи, версія, дата ратифікації
+│   │   └── constitution.md          # Principles, version, ratification date
 │   ├── scripts/
 │   │   ├── bash/                    # check-prerequisites.sh, common.sh,
 │   │   │                            # create-new-feature.sh, setup-plan.sh,
@@ -306,10 +306,10 @@ Frontend: React 18 + TypeScript + TanStack Query.
 │   │   ├── plan-template.md
 │   │   ├── tasks-template.md
 │   │   ├── checklist-template.md
-│   │   └── commands/                # 9 команд як markdown-промпти
-│   ├── feature.json                 # активна фіча (для downstream команд)
+│   │   └── commands/                # 9 commands as markdown prompts
+│   ├── feature.json                 # active feature (for downstream commands)
 │   ├── init-options.json            # branch_numbering: sequential|timestamp
-│   └── extensions.yml               # реєстр extension hooks
+│   └── extensions.yml               # registry of extension hooks
 ├── specs/
 │   └── 001-feature-name/
 │       ├── spec.md                  # WHAT & WHY (P1/P2/P3, FR-, SC-)
@@ -320,33 +320,33 @@ Frontend: React 18 + TypeScript + TanStack Query.
 │       ├── quickstart.md            # Manual validation scenarios
 │       ├── checklists/              # requirements.md (auto) + custom
 │       └── tasks.md                 # Phase 1, 2, 3+, Polish
-└── (контекст агента)
+└── (agent context)
     ├── CLAUDE.md  /  GEMINI.md  /  AGENTS.md  /  QWEN.md
     ├── .github/copilot-instructions.md
     ├── .cursor/rules/specify-rules.mdc
     └── .windsurf/rules/specify-rules.md
 ```
 
-> 💡 **Активна фіча** визначається через `.specify/feature.json` (з v0.8.1), тому команди працюють навіть якщо назва git-branch розійшлася зі specs-папкою.
+> 💡 **The active feature** is determined via `.specify/feature.json` (since v0.8.1), so the commands work even when the git branch name has drifted from the specs folder.
 
 ---
 
-## 6. Pipeline workflow (як артефакти течуть)
+## 6. Pipeline workflow (how artifacts flow)
 
 ```
 ┌──────────────┐
-│ constitution │  (один раз; bumps semver при змінах)
+│ constitution │  (once; bumps semver on changes)
 └──────┬───────┘
        │
        ▼
 ┌──────────────┐     ┌──────────────┐
-│   specify    │────▶│   clarify    │  (рекомендовано перед /plan)
+│   specify    │────▶│   clarify    │  (recommended before /plan)
 └──────┬───────┘     └──────┬───────┘
        │                    │
        └────────┬───────────┘
                 ▼
         ┌──────────────┐     ┌──────────────┐
-        │     plan     │────▶│  checklist   │  (опційно)
+        │     plan     │────▶│  checklist   │  (optional)
         └──────┬───────┘     └──────────────┘
                │
                ▼
@@ -356,7 +356,7 @@ Frontend: React 18 + TypeScript + TanStack Query.
                │
                ▼
         ┌──────────────┐
-        │   analyze    │  (read-only; CRITICAL = блокер)
+        │   analyze    │  (read-only; CRITICAL = blocker)
         └──────┬───────┘
                │
                ▼
@@ -367,29 +367,29 @@ Frontend: React 18 + TypeScript + TanStack Query.
 
 ---
 
-## 7. Встановлення — деталі
+## 7. Installation — details
 
-### Передумови
+### Prerequisites
 
-- Linux / macOS / Windows (PowerShell 7+ для офлайн; WSL більше не обовʼязковий)
+- Linux / macOS / Windows (PowerShell 7+ for offline; WSL is no longer required)
 - **Python 3.11+**
-- **uv** (рекомендовано) або **pipx**
+- **uv** (recommended) or **pipx**
 - **Git**
-- AI-агент (Claude Code / Copilot / Cursor / Gemini / Codex / ...)
+- An AI agent (Claude Code / Copilot / Cursor / Gemini / Codex / ...)
 
-### Варіанти встановлення
+### Installation options
 
-**One-shot через uvx** (без постійного встановлення):
+**One-shot via uvx** (no permanent install):
 ```bash
 uvx --from git+https://github.com/github/spec-kit.git@vX.Y.Z specify init <PROJECT>
 uvx --from git+https://github.com/github/spec-kit.git specify init . --integration claude
 uvx --from git+https://github.com/github/spec-kit.git specify init --here --integration copilot
 ```
 
-**Persistent install** (рекомендовано для регулярної роботи):
+**Persistent install** (recommended for regular work):
 ```bash
 uv tool install specify-cli --from git+https://github.com/github/spec-kit.git@vX.Y.Z
-# або
+# or
 pipx install git+https://github.com/github/spec-kit.git@vX.Y.Z
 
 specify version
@@ -397,26 +397,26 @@ specify check
 specify integration list
 ```
 
-> ⚠️ Єдине офіційне джерело — `github.com/github/spec-kit`. Будь-який пакет на PyPI з назвою `specify-cli` *НЕ* від GitHub.
+> ⚠️ The only official source is `github.com/github/spec-kit`. Any package on PyPI named `specify-cli` is *NOT* from GitHub.
 
-### Прапори `specify init`
+### `specify init` flags
 
-| Прапор | Призначення |
-|--------|-------------|
-| `<name>` або `.` | Нова папка / поточна папка |
-| `--here` | Ініціалізація у поточній директорії |
-| `--force` | Не питати підтвердження для непорожньої папки |
-| `--integration <key>` | Вибрати агента (`claude`, `copilot`, `gemini`, ...) |
-| `--integration-options "<opts>"` | Напр. `--skills` для Codex/Copilot |
-| `--script sh\|ps` | Примусово вибрати тип скриптів |
-| `--ignore-agent-tools` | Не перевіряти, чи встановлено CLI агента |
-| `--no-git` | Пропустити git init (deprecated, видалено в v0.10.0) |
+| Flag | Purpose |
+|------|---------|
+| `<name>` or `.` | New folder / current folder |
+| `--here` | Initialize in the current directory |
+| `--force` | Skip the confirmation for a non-empty folder |
+| `--integration <key>` | Pick the agent (`claude`, `copilot`, `gemini`, ...) |
+| `--integration-options "<opts>"` | E.g. `--skills` for Codex/Copilot |
+| `--script sh\|ps` | Force the script type |
+| `--ignore-agent-tools` | Skip checking whether the agent's CLI is installed |
+| `--no-git` | Skip git init (deprecated, removed in v0.10.0) |
 | `--ai <key>` | Legacy alias for `--integration` |
-| `--preset <name>` | Спільнотний preset (наприклад, `healthcare-compliance`) |
+| `--preset <name>` | Community preset (e.g., `healthcare-compliance`) |
 
-### Air-gapped install (для closed enterprise мереж)
+### Air-gapped install (for closed enterprise networks)
 
-На підключеній машині:
+On a connected machine:
 ```bash
 git clone https://github.com/github/spec-kit.git
 cd spec-kit
@@ -425,12 +425,12 @@ python -m build --wheel --outdir dist/
 pip download -d dist/ dist/specify_cli-*.whl
 ```
 
-Перенесіть `dist/` на цільову машину, потім:
+Move `dist/` to the target machine, then:
 ```bash
 pip install --no-index --find-links=./dist specify-cli
 ```
 
-(Той самий OS і Python-версія обовʼязкові.)
+(The same OS and Python version are required.)
 
 ---
 
@@ -438,48 +438,48 @@ pip install --no-index --find-links=./dist specify-cli
 
 ### DO
 
-- ✅ **Specs technology-free** — стек йде в `plan.md`, не в `spec.md`.
-- ✅ **Завжди `/clarify` перед `/plan`** (виняток — exploratory spike).
-- ✅ **Measurable success criteria** — «User can complete checkout in under 3 minutes», а не «API responds <200ms».
-- ✅ **Запуск `/analyze` перед `/implement`** — CRITICAL знахідки = блокер.
-- ✅ **Phased implementation** — реалізуйте P1 → валідуйте MVP → потім P2/P3. Запобігає context saturation.
-- ✅ **Constitution як реальний контракт** — версіонуйте, оновлюйте, посилайтесь.
-- ✅ **Один branch — одна фіча** — `specs/001-foo/` ↔ branch `001-foo` ↔ один PR.
-- ✅ **Pin tag (`@vX.Y.Z`)** замість `main` для стабільності CI.
-- ✅ **Брат push back** — питайте агента: «Чому ти додав цей компонент? До якої вимоги він трасується?»
+- ✅ **Specs technology-free** — the stack goes in `plan.md`, not `spec.md`.
+- ✅ **Always `/clarify` before `/plan`** (exception — an exploratory spike).
+- ✅ **Measurable success criteria** — "User can complete checkout in under 3 minutes", not "API responds <200ms".
+- ✅ **Run `/analyze` before `/implement`** — CRITICAL findings = blocker.
+- ✅ **Phased implementation** — ship P1 → validate the MVP → then P2/P3. Prevents context saturation.
+- ✅ **Constitution as a real contract** — version it, update it, reference it.
+- ✅ **One branch — one feature** — `specs/001-foo/` ↔ branch `001-foo` ↔ one PR.
+- ✅ **Pin a tag (`@vX.Y.Z`)** instead of `main` for CI stability.
+- ✅ **Push back** — ask the agent: "Why did you add this component? Which requirement does it trace to?"
 
 ### DON'T
 
-- ❌ Не приймайте перший draft спеки як фінальний — ітеруйте через `/clarify`.
-- ❌ Не змішуйте tech stack у `spec.md`.
-- ❌ Не пропускайте `constitution.md` — без неї `Constitution Check` беззубий.
-- ❌ Не залишайте більше 3 `[NEEDS CLARIFICATION]` маркерів — краще defaults у Assumptions section.
-- ❌ Не дозволяйте задачам без `[Story]`-лейбла або без шляху до файлу.
-- ❌ Не запускайте `/implement` із incomplete checklist і не кажіть «yes» автоматично — це руйнує quality gate.
-- ❌ Не давайте агенту research broad topics («React in general»). Тільки narrow targeted.
-- ❌ Не ігноруйте Sync Impact Report після `/constitution` — залежні шаблони можуть тихо drift-нути.
+- ❌ Don't accept the first draft of the spec as final — iterate via `/clarify`.
+- ❌ Don't mix the tech stack into `spec.md`.
+- ❌ Don't skip `constitution.md` — without it the `Constitution Check` is toothless.
+- ❌ Don't leave more than 3 `[NEEDS CLARIFICATION]` markers — prefer defaults in the Assumptions section.
+- ❌ Don't allow tasks without a `[Story]` label or without a file path.
+- ❌ Don't run `/implement` with an incomplete checklist and don't auto-say "yes" — that breaks the quality gate.
+- ❌ Don't let the agent research broad topics ("React in general"). Only narrow, targeted research.
+- ❌ Don't ignore the Sync Impact Report after `/constitution` — dependent templates can quietly drift.
 
 ---
 
-## 8.5. Project Memory — багаторівнева архітектура
+## 8.5. Project Memory — multi-tier architecture
 
-Spec-kit веде «пам'ять» проекту на трьох рівнях. Розуміння цієї архітектури критично важливе для правильного використання інструменту в довгостроковій перспективі.
+Spec-kit maintains project "memory" at three tiers. Understanding this architecture is critical for using the tool correctly over the long term.
 
-### Рівень 1 — Інваріанти (повільні зміни)
+### Tier 1 — Invariants (slow-moving)
 
-Файли, які описують *проект як ціле* і не прив'язані до конкретної фічі:
+Files that describe *the project as a whole* and aren't tied to a specific feature:
 
-- **`.specify/memory/constitution.md`** — інженерні принципи. Те, що не змінюється від фічі до фічі (Test-First, Type Safety, API-First тощо). Versioned semver, з ratification і amendment процесом. Деталі — у `CONSTITUTION_GUIDE.md`.
-- **`.specify/init-options.json`** — конфіг spec-kit для проекту: `branch_numbering: sequential|timestamp`, тип скриптів (`sh`/`ps`).
-- **`.specify/extensions.yml`** — реєстр extension hooks (`before_specify`, `after_plan`, `before_implement`, etc.).
-- **`.specify/feature.json`** — поточна активна фіча (для downstream команд). З версії 0.8.1 працює навіть якщо назва branch розійшлась з папкою.
+- **`.specify/memory/constitution.md`** — engineering principles. The things that don't change from feature to feature (Test-First, Type Safety, API-First, etc.). Versioned by semver, with a ratification and amendment process. Details — in `CONSTITUTION_GUIDE.md`.
+- **`.specify/init-options.json`** — spec-kit config for the project: `branch_numbering: sequential|timestamp`, script type (`sh`/`ps`).
+- **`.specify/extensions.yml`** — registry of extension hooks (`before_specify`, `after_plan`, `before_implement`, etc.).
+- **`.specify/feature.json`** — the currently active feature (for downstream commands). Since version 0.8.1, it works even when the branch name has drifted from the folder.
 
-### Рівень 2 — Живий контекст агента (швидкі зміни)
+### Tier 2 — The agent's live context (fast-moving)
 
-Файл, який AI-агент **читає на кожне нове повідомлення**. Залежить від агента:
+A file the AI agent **reads on every new message**. Depends on the agent:
 
-| Агент | Файл контексту |
-|-------|---------------|
+| Agent | Context file |
+|-------|--------------|
 | Claude Code | `CLAUDE.md` |
 | Gemini CLI | `GEMINI.md` |
 | Codex / generic | `AGENTS.md` |
@@ -488,7 +488,7 @@ Spec-kit веде «пам'ять» проекту на трьох рівнях.
 | Cursor | `.cursor/rules/specify-rules.mdc` |
 | Windsurf | `.windsurf/rules/specify-rules.md` |
 
-Spec-kit пише в цей файл між маркерами:
+Spec-kit writes into this file between markers:
 
 ```markdown
 <!-- SPECKIT START -->
@@ -504,48 +504,48 @@ Constitution: see .specify/memory/constitution.md (v1.0.0)
 <!-- SPECKIT END -->
 ```
 
-При кожному `/speckit.plan` цей блок оновлюється — агент учиться з актуального стану проекту, а не починає з нуля. **Поза маркерами файл — ваш**, можете писати свої нотатки, spec-kit їх не зачіпає.
+On every `/speckit.plan` this block is updated — the agent learns from the project's current state instead of starting from scratch. **Outside the markers, the file is yours**, you can write your own notes; spec-kit doesn't touch them.
 
-### Рівень 3 — Історія рішень (immutable)
+### Tier 3 — Decision history (immutable)
 
-`specs/` — це не «пам'ять» у класичному сенсі, а **архів інженерних рішень**, який накопичується протягом життя проекту.
+`specs/` isn't "memory" in the classic sense — it's an **archive of engineering decisions** that accumulates over the life of the project.
 
 ```
 specs/
 ├── 001-user-auth/
-│   ├── spec.md         ← що було вирішено (WHAT)
-│   ├── plan.md         ← Constitution Check, технічні рішення
-│   ├── research.md     ← чому саме так (Decision/Rationale/Alternatives)
-│   ├── data-model.md   ← entities на момент фічі
+│   ├── spec.md         ← what was decided (WHAT)
+│   ├── plan.md         ← Constitution Check, technical decisions
+│   ├── research.md     ← why exactly that way (Decision/Rationale/Alternatives)
+│   ├── data-model.md   ← entities at the time of the feature
 │   └── contracts/      ← OpenAPI snapshot
 ├── 002-search-filter/
 └── 003-tags/
 ```
 
-Через 6 місяців нова людина може прочитати `research.md` із `001-user-auth` і зрозуміти, *чому* ми обрали JWT через FastAPI-Users, а не Auth0 — це задокументовано у форматі Decision/Rationale/Alternatives. Це жива архівна пам'ять, яку агент може читати при питаннях типу «як у нас зроблено auth?».
+Six months later a new person can read `research.md` from `001-user-auth` and understand *why* we chose JWT via FastAPI-Users instead of Auth0 — it's documented in the Decision/Rationale/Alternatives format. This is living archival memory the agent can read when answering questions like "how is auth done here?".
 
-> ⚠️ **На масштабі (200+ specs)** flat-структура без догляду стає смітником. Дивіться окремий документ `SPECS_HYGIENE.md` про lifecycle states, archival pattern, domain grouping і quarterly grooming ritual.
+> ⚠️ **At scale (200+ specs)** the flat structure becomes a junk drawer without maintenance. See the separate document `SPECS_HYGIENE.md` on lifecycle states, archival pattern, domain grouping, and quarterly grooming ritual.
 
-### Як це працює на практиці
+### How this works in practice
 
-Сценарій: ви відсутні три тижні, повертаєтесь, не пам'ятаєте контексту. Відкриваєте Claude Code — агент *вже знає*:
+Scenario: you're away for three weeks, come back, and don't remember the context. You open Claude Code — the agent *already knows*:
 
-1. Прочитав `CLAUDE.md` — бачить актуальний стек і референс на конституцію.
-2. При `/speckit.specify` для нової фічі — читає `constitution.md` і дотримується принципів.
-3. У `/speckit.plan` — читає попередні `specs/*/data-model.md`, щоб новий код консистентно інтегрувався з існуючими entities.
-4. Питання типу «чому в нас auth через JWT?» — агент відкриває `specs/001-user-auth/research.md` і відповідає з конкретним rationale.
+1. It read `CLAUDE.md` — sees the current stack and a reference to the constitution.
+2. On `/speckit.specify` for a new feature, it reads `constitution.md` and follows the principles.
+3. In `/speckit.plan`, it reads previous `specs/*/data-model.md` so the new code integrates consistently with existing entities.
+4. A question like "why do we do auth via JWT?" — the agent opens `specs/001-user-auth/research.md` and answers with concrete rationale.
 
-Тобто проектна пам'ять — це **не один файл**, а структурована файлова система. Жодної бази даних, жодного хмарного state. Усе портабельне, переглядається людиною, версіонується разом з кодом.
+In other words, project memory is **not a single file** but a structured filesystem. No database, no cloud state. Everything is portable, human-readable, and versioned alongside the code.
 
 ---
 
-## 8.6. Просунуті агентні можливості
+## 8.6. Advanced agent capabilities
 
-Spec-kit використовує можливості host-агента (Claude Code, Codex, Cursor) глибше, ніж може здатись. Що саме вбудовано:
+Spec-kit uses host-agent capabilities (Claude Code, Codex, Cursor) more deeply than it might seem. What's actually built in:
 
 ### Skills mode (Claude / Codex / Kimi / Vibe)
 
-Для цих агентів spec-kit за дефолтом встановлюється **не** як список markdown-промптів, а як **agent skills**:
+For these agents, spec-kit installs by default **not** as a list of markdown prompts but as **agent skills**:
 
 ```
 .claude/skills/
@@ -560,19 +560,19 @@ Spec-kit використовує можливості host-агента (Claude
 └── speckit-taskstoissues/SKILL.md
 ```
 
-Кожен skill — окрема директорія з `SKILL.md` + frontmatter (name, description). Що це дає:
+Each skill is a separate directory with `SKILL.md` + frontmatter (name, description). What this gives you:
 
-- **Progressive disclosure** — skill завантажується в контекст тільки коли агент розуміє, що треба його використати. Не висить постійно.
-- **Token-efficient** — повний промпт `/speckit.plan` (300+ рядків інструкцій) не з'їдає контекст, поки ви реально не запускаєте plan.
-- **Skill-by-skill ізоляція** — `/speckit.specify` не «знає» повного промпту `/speckit.plan` — кожен self-contained.
+- **Progressive disclosure** — a skill is loaded into context only when the agent recognizes it should be used. It doesn't sit there permanently.
+- **Token-efficient** — the full `/speckit.plan` prompt (300+ lines of instructions) doesn't eat context until you actually run plan.
+- **Skill-by-skill isolation** — `/speckit.specify` doesn't "know" the full prompt for `/speckit.plan` — each is self-contained.
 
-У Codex CLI skills-режимі префікс інший: `$speckit-specify` замість `/speckit.specify`.
+In Codex CLI skills mode the prefix is different: `$speckit-specify` instead of `/speckit.specify`.
 
-Для агентів без skills (Copilot, Cursor, Gemini, Windsurf) команди ставляться як markdown / TOML / YAML промпти — функціонально те саме, але без skills-оптимізації.
+For agents without skills (Copilot, Cursor, Gemini, Windsurf), commands install as markdown / TOML / YAML prompts — functionally the same, but without skills optimization.
 
-### Sub-agent dispatching у `/speckit.plan`
+### Sub-agent dispatching in `/speckit.plan`
 
-У промпті `templates/commands/plan.md` є **прямий патерн для Task tool / sub-agents**:
+The `templates/commands/plan.md` prompt includes a **direct pattern for the Task tool / sub-agents**:
 
 ```
 ### Phase 0: Outline & Research
@@ -592,11 +592,11 @@ Spec-kit використовує можливості host-агента (Claude
 3. Consolidate findings in research.md
 ```
 
-Це означає: на фазі Research ваш AI-агент *дійсно* spawn-ить кілька паралельних під-агентів — кожен робить свій research — і збирає результати у `research.md`. Без цього на 5 невідомих ви платили б 5x токенів і часу sequentially.
+What this means: in the Research phase your AI agent *actually* spawns several parallel sub-agents — each does its own research — and consolidates the results in `research.md`. Without this, on 5 unknowns you'd be paying 5x in tokens and time sequentially.
 
-### Parallel markers `[P]` у `/speckit.implement`
+### Parallel `[P]` markers in `/speckit.implement`
 
-`/speckit.tasks` маркує задачі як `[P]` (parallelizable — різні файли, нема залежностей), а `/speckit.implement` ці маркери **використовує**:
+`/speckit.tasks` marks tasks as `[P]` (parallelizable — different files, no dependencies), and `/speckit.implement` **uses** those markers:
 
 ```
 [Phase 3] T009-T012 (US1)...
@@ -604,11 +604,11 @@ Spec-kit використовує можливості host-агента (Claude
   → 3 tests PASS in parallel ✅
 ```
 
-Це не теоретичний паралелізм — у chat'і Claude Code ви побачите, як агент стартує 3–4 sub-agents для `[P]`-задач одночасно. Послідовні (без `[P]`) виконуються одна за одною.
+This isn't theoretical parallelism — in the Claude Code chat you'll see the agent start 3–4 sub-agents for `[P]` tasks at once. Sequential ones (without `[P]`) run one after another.
 
-### Hooks через `extensions.yml`
+### Hooks via `extensions.yml`
 
-Механізм розширення (early-stage, але працює):
+The extension mechanism (early-stage, but working):
 
 ```yaml
 hooks:
@@ -617,7 +617,7 @@ hooks:
       enabled: true
       extension: "speckit-core"
       command: "create_feature_branch"
-      description: "Створити feature branch перед /specify"
+      description: "Create a feature branch before /specify"
 
   after_implement:
     - id: my_post_test
@@ -625,59 +625,59 @@ hooks:
       optional: true
       extension: "my-extension"
       command: "run_smoke_tests"
-      description: "Запустити smoke tests після /implement"
-      prompt: "Запустити smoke tests?"
+      description: "Run smoke tests after /implement"
+      prompt: "Run smoke tests?"
 ```
 
-Точки розширення: `before_specify`, `after_specify`, `before_plan`, `after_plan`, `before_tasks`, `after_tasks`, `before_implement`, `after_implement`.
+Extension points: `before_specify`, `after_specify`, `before_plan`, `after_plan`, `before_tasks`, `after_tasks`, `before_implement`, `after_implement`.
 
-Hooks — це **shell-команди або кастомні extensions**, які виконуються до/після команди spec-kit. Можуть:
+Hooks are **shell commands or custom extensions** that run before/after a spec-kit command. They can:
 
-- Запустити власного sub-agent через MCP.
-- Покликати скрипт на Python з власною логікою.
-- Заблокувати команду, якщо передумови не виконані.
+- Spawn your own sub-agent via MCP.
+- Call a Python script with custom logic.
+- Block the command if preconditions aren't met.
 
-> 💡 **Найчастіша проблема** у початківців: `before_specify` hook (створення feature branch) **не спрацьовує** — `extensions.yml` відсутній або hook вимкнений. Лікування — перевірте `cat .specify/extensions.yml` і `.specify/scripts/bash/create-new-feature.sh`. Якщо файлів нема — виконайте `specify integration upgrade` або вручну створюйте branch перед `/specify`.
+> 💡 **The most common problem** for beginners: the `before_specify` hook (creating a feature branch) **doesn't fire** — `extensions.yml` is missing or the hook is disabled. Fix — check `cat .specify/extensions.yml` and `.specify/scripts/bash/create-new-feature.sh`. If the files aren't there, run `specify integration upgrade` or create the branch manually before `/specify`.
 
-### Що **не** вбудовано
+### What's **not** built in
 
-Чесно про обмеження. Spec-kit залишається перш за все **prompt library + skills**, не повноцінний agent framework. Що відсутнє:
+Honestly, about the limitations. Spec-kit remains primarily a **prompt library + skills**, not a full agent framework. What's missing:
 
-- **Multi-agent orchestration з ролями** (як CrewAI, AutoGen) — немає концепту «Architect agent → Reviewer agent → Implementer agent». Якщо потрібно — будуєте через hooks + кастомні MCP servers.
-- **Persistent agent memory across sessions** окрім markdown — немає вектор-сховища, semantic search по історії specs. Інтегруйте Pinecone / Weaviate через MCP самі.
-- **Background daemons / watchers** — немає вбудованих тригерів типу «автоматично запусти `/analyze` після push». Робиться через GitHub Actions.
-- **Custom sub-agent definitions** — на відміну від Claude Code's native sub-agent system, spec-kit прямо цього не підтримує. Але через hooks ви можете викликати свого агента.
-- **Cross-feature analysis** — `/speckit.analyze` дивиться на одну активну фічу. Аналіз «чи 3 фічі суперечать архітектурно» — окреме рішення команди (ADR-процес).
-
----
-
-## 9. Reference: ключові файли в репозиторії spec-kit
-
-Якщо потрібно копнути глибше:
-
-- `spec-driven.md` — методологічне есе (~412 рядків, MUST READ)
-- `AGENTS.md` — як додати свого агента
-- `CHANGELOG.md` — історія версій
-- `templates/commands/{constitution,specify,clarify,plan,tasks,analyze,implement,checklist,taskstoissues}.md` — самі промпти команд (можна модифікувати локально через extensions)
-- `templates/{constitution,spec,plan,tasks,checklist}-template.md` — шаблони артефактів
-- `docs/{installation,quickstart,upgrade,index}.md` — офіційна документація
-- `src/specify_cli/__init__.py` — entry-point CLI, всі прапори
-- `src/specify_cli/integrations/` — реєстр 30+ агентів
+- **Multi-agent orchestration with roles** (like CrewAI, AutoGen) — there's no concept of "Architect agent → Reviewer agent → Implementer agent". If you need that, build it via hooks + custom MCP servers.
+- **Persistent agent memory across sessions** beyond markdown — there's no vector store, no semantic search across spec history. Integrate Pinecone / Weaviate via MCP yourself.
+- **Background daemons / watchers** — there are no built-in triggers like "automatically run `/analyze` after a push". This is done via GitHub Actions.
+- **Custom sub-agent definitions** — unlike Claude Code's native sub-agent system, spec-kit doesn't directly support this. But via hooks you can call your own agent.
+- **Cross-feature analysis** — `/speckit.analyze` looks at one active feature. Analyzing "do these 3 features conflict architecturally" is a separate decision for the team (ADR process).
 
 ---
 
-## 10. Що читати далі
+## 9. Reference: key files in the spec-kit repository
 
-### Базовий блок — практика на тренувальному проекті
+If you need to dig deeper:
 
-1. **`SPEC_KIT_WORKFLOW_GUIDE.md`** — наскрізне проходження SDD-2 (Search & Filter) на тренувальному проекті: від `/specify` до `/implement` з повним текстом усіх артефактів.
-2. **`SPEC_KIT_USE_CASES.md`** — 9 сценаріїв за рівнями складності.
-3. **`TASKS.md` / `TASKS_JIRA.md`** — практичний бекенд із 7 задач для самостійної роботи.
+- `spec-driven.md` — the methodology essay (~412 lines, MUST READ)
+- `AGENTS.md` — how to add your own agent
+- `CHANGELOG.md` — version history
+- `templates/commands/{constitution,specify,clarify,plan,tasks,analyze,implement,checklist,taskstoissues}.md` — the command prompts themselves (can be modified locally via extensions)
+- `templates/{constitution,spec,plan,tasks,checklist}-template.md` — artifact templates
+- `docs/{installation,quickstart,upgrade,index}.md` — official documentation
+- `src/specify_cli/__init__.py` — CLI entry point, all the flags
+- `src/specify_cli/integrations/` — registry of 30+ agents
 
-### Поглиблений блок — для команд і реальних проектів
+---
 
-4. **`SCRUM_INTEGRATION.md`** — інтеграція spec-kit зі Scrum-церемоніями: грумінг, планінг, стендап, демо, ретро. Матриця ролей. Jira mapping. DoR/DoD.
-5. **`CONSTITUTION_GUIDE.md`** — глибокий гайд по `.specify/memory/constitution.md`: як писати, як еволюціонувати, реальний приклад v1.0 → v2.x за 12 місяців.
-6. **`SPECS_HYGIENE.md`** — підтримка `specs/` на масштабі (100+ фіч): lifecycle states, archival pattern, domain hierarchy, manifest, quarterly grooming, скрипти.
+## 10. What to read next
 
-> 🚀 **Готові? Переходьте до `SPEC_KIT_WORKFLOW_GUIDE.md`** — там покажемо, як це все виглядає на практиці.
+### Foundation block — practice on the training project
+
+1. **`SPEC_KIT_WORKFLOW_GUIDE.md`** — an end-to-end walkthrough of SDD-2 (Search & Filter) on the training project: from `/specify` to `/implement` with the full text of every artifact.
+2. **`SPEC_KIT_USE_CASES.md`** — 9 scenarios by complexity level.
+3. **`TASKS.md` / `TASKS_JIRA.md`** — a practical backend with 7 tasks for self-paced work.
+
+### Deep-dive block — for teams and real projects
+
+4. **`SCRUM_INTEGRATION.md`** — integrating spec-kit with Scrum ceremonies: grooming, planning, standup, demo, retro. Role matrix. Jira mapping. DoR/DoD.
+5. **`CONSTITUTION_GUIDE.md`** — a deep dive into `.specify/memory/constitution.md`: how to write it, how to evolve it, a real example v1.0 → v2.x over 12 months.
+6. **`SPECS_HYGIENE.md`** — maintaining `specs/` at scale (100+ features): lifecycle states, archival pattern, domain hierarchy, manifest, quarterly grooming, scripts.
+
+> 🚀 **Ready? Move on to `SPEC_KIT_WORKFLOW_GUIDE.md`** — there we'll show what this all looks like in practice.
